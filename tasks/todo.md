@@ -15,8 +15,8 @@
 - [x] ⛔ CHECKPOINT 3
 
 ## Phase 4: Sync Flow
-- [ ] Task 6: Sync Now API + Review page
-- [ ] ⛔ CHECKPOINT 4
+- [x] Task 6: Sync Now API + Review page
+- [x] ⛔ CHECKPOINT 4
 
 ## Phase 5: Conflict Resolution
 - [ ] Task 7: Resolve conflicts page

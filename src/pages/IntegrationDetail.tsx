@@ -1,10 +1,11 @@
-import { Link, useParams } from 'react-router-dom'
-import { RefreshCw, History, AlertTriangle } from 'lucide-react'
+import { Link, useParams, useNavigate } from 'react-router-dom'
+import { RefreshCw, History, AlertTriangle, XCircle } from 'lucide-react'
 import { useIntegrationStore } from '@/stores/integration_store'
 import { mockHistory } from '@/data/history'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { StatCard } from '@/components/ui/StatCard'
 import { ConflictAlert } from '@/components/integrations/ConflictAlert'
+import { useSyncNow } from '@/api/sync_api'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString(undefined, {
@@ -18,7 +19,10 @@ function formatDate(iso: string) {
 
 export function IntegrationDetail() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const integration = useIntegrationStore((s) => s.integrations.find((i) => i.id === id))
+  const setPendingChanges = useIntegrationStore((s) => s.setPendingChanges)
+  const syncMutation = useSyncNow()
 
   if (!integration) {
     return (
@@ -33,8 +37,19 @@ export function IntegrationDetail() {
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     .slice(0, 5)
 
+  const integrationId = integration.id
   const isConflict = integration.status === 'conflict'
   const isSyncing = integration.status === 'syncing'
+  const syncDisabled = isConflict || isSyncing || syncMutation.isPending
+
+  function handleSyncNow() {
+    syncMutation.mutate(integrationId, {
+      onSuccess: (changes) => {
+        setPendingChanges(changes)
+        navigate(`/integrations/${integrationId}/review`)
+      },
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -55,20 +70,38 @@ export function IntegrationDetail() {
             </div>
           </div>
         </div>
-        <Link
-          to={`/integrations/${integration.id}/review`}
+        <button
+          type="button"
+          onClick={handleSyncNow}
+          disabled={syncDisabled}
           className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            isConflict || isSyncing
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none'
+            syncDisabled
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
               : 'bg-blue-600 text-white hover:bg-blue-700'
           }`}
-          aria-disabled={isConflict || isSyncing}
-          tabIndex={isConflict || isSyncing ? -1 : 0}
         >
-          <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-          <button type="button" className="contents">Sync Now</button>
-        </Link>
+          <RefreshCw className={`w-4 h-4 ${syncMutation.isPending || isSyncing ? 'animate-spin' : ''}`} />
+          Sync Now
+        </button>
       </div>
+
+      {/* Sync error */}
+      {syncMutation.isError && (
+        <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-lg p-4">
+          <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-red-700">Sync failed</p>
+            <p className="text-sm text-red-600 mt-0.5">{syncMutation.error?.message}</p>
+          </div>
+          <button
+            onClick={() => syncMutation.reset()}
+            className="text-red-400 hover:text-red-600 text-xs underline"
+            aria-label="Dismiss error"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Conflict Alert */}
       {isConflict && <ConflictAlert integration_id={integration.id} />}

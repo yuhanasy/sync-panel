@@ -108,10 +108,10 @@ Review page: Approval Required banner. Stats (Added/Updated/Deleted counts). Per
 
 **Files:** `src/api/sync_api.ts`, `src/pages/ReviewSync.tsx`, `src/components/sync/ChangeCard.tsx`
 
-### ⛔ CHECKPOINT 4 — Stop and wait for review
-- [ ] Sync Now calls real API
-- [ ] All error states verified
-- [ ] Approve creates history entry, returns to detail
+### ✅ CHECKPOINT 4 — Passed
+- [x] Sync Now calls real API
+- [x] All error states verified
+- [x] Approve creates history entry, returns to detail
 
 ---
 

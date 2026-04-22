@@ -35,5 +35,5 @@ npx vitest run src/path/to/__tests__/file.test.tsx  # single test file
 - create plan first when the task is quite complex using /agent-skills:plan
 - always check the plan first and continue next phase
 - implement using /agent-skills:build to build incrementally and to use TDD
-- always stop at checkpoint, check the completed tasks and plans, then ask confirmation before committing changes.
+- always stop at checkpoint, marks the completed tasks and plans to done, then ask confirmation before committing changes.
 - when all plans and todos are completed, move them to `tasks/archive/`. then ready for next planning.
