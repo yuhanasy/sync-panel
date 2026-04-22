@@ -1,7 +1,7 @@
 # Implementation Plan: Portier Integration Sync Panel
 
 ## Stack
-Vite + React 18 + TypeScript · Tailwind CSS · React Router v6 · Zustand · TanStack Query · Lucide React
+Vite + React 18 + TypeScript · Tailwind CSS v4 · React Router v6 · Zustand · TanStack Query · Lucide React
 
 ## Routes
 | Page | Route |
@@ -33,11 +33,16 @@ types → mock data → stores → api hooks → ui components → pages → she
 ## Phase 1: Foundation
 
 ### Task 1 — Project scaffold
-Init Vite+React+TS, add Tailwind, React Router, Zustand, TanStack Query, Lucide. Configure `@/` alias.
+Init Vite+React+TS, add Tailwind v4 (`@tailwindcss/vite`), React Router, Zustand, TanStack Query, Lucide. Configure `@/` alias.
+
+Tailwind v4 setup:
+- Install `tailwindcss@next @tailwindcss/vite` (no PostCSS needed)
+- Add `@tailwindcss/vite` plugin to `vite.config.ts`
+- CSS entry uses `@import "tailwindcss"` + `@theme {}` block for customization (no `tailwind.config.ts`)
 
 **Criteria:** `npm run dev` + `npm run build` pass. Tailwind works. Placeholder route at `/`.
 
-**Files:** `package.json`, `vite.config.ts`, `tailwind.config.ts`, `tsconfig.json`, `src/main.tsx`, `src/App.tsx`
+**Files:** `package.json`, `vite.config.ts`, `tsconfig.json`, `src/index.css`, `src/main.tsx`, `src/App.tsx`
 
 ### Task 2 — Types + mock data
 Define all interfaces in `src/types/index.ts`. Seed 6 integrations (all 4 statuses represented). Seed ≥3 history entries per integration with VersionChange arrays. Seed HubSpot conflict items (≥3 fields, ≥2 entities).
@@ -54,9 +59,9 @@ Define all interfaces in `src/types/index.ts`. Seed 6 integrations (all 4 status
 **Files:** `src/stores/integration_store.ts`, `src/stores/conflict_store.ts`, `src/components/layout/`, `src/App.tsx`
 
 ### ⛔ CHECKPOINT 1 — Stop and wait for review
-- [ ] `npm run build` exits 0
-- [ ] `tsc --noEmit` exits 0
-- [ ] All 6 routes navigable in browser, no console errors
+- [x] `npm run build` exits 0
+- [x] `tsc --noEmit` exits 0
+- [x] All 6 routes navigable in browser, no console errors
 
 ---
 

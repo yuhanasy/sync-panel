@@ -1,10 +1,10 @@
 # Task List
 
 ## Phase 1: Foundation
-- [ ] Task 1: Project scaffold
-- [ ] Task 2: Types + mock data
-- [ ] Task 3: Stores + app shell
-- [ ] ⛔ CHECKPOINT 1
+- [x] Task 1: Project scaffold
+- [x] Task 2: Types + mock data
+- [x] Task 3: Stores + app shell
+- [x] ⛔ CHECKPOINT 1
 
 ## Phase 2: Integrations List
 - [ ] Task 4: Integrations list page
