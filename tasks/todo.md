@@ -11,8 +11,8 @@
 - [x] ⛔ CHECKPOINT 2
 
 ## Phase 3: Integration Detail
-- [ ] Task 5: Integration detail page
-- [ ] ⛔ CHECKPOINT 3
+- [x] Task 5: Integration detail page
+- [x] ⛔ CHECKPOINT 3
 
 ## Phase 4: Sync Flow
 - [ ] Task 6: Sync Now API + Review page
