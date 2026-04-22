@@ -1,5 +1,7 @@
 import { Link, Outlet, useLocation, useParams } from 'react-router-dom'
+import { Toaster } from 'sonner'
 import { useIntegrationStore } from '@/stores/integration_store'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 
 function Breadcrumb() {
   const location = useLocation()
@@ -60,8 +62,11 @@ export function Shell() {
         </div>
       </header>
       <main className="max-w-6xl mx-auto px-6 py-8">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
+      <Toaster />
     </div>
   )
 }

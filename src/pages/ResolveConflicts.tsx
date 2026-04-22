@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, GitMerge, AlertCircle } from 'lucide-react'
+import { toast } from 'sonner'
+import { ArrowLeft, GitMerge, AlertCircle, Inbox } from 'lucide-react'
 import { useConflictStore } from '@/stores/conflict_store'
 import { useIntegrationStore } from '@/stores/integration_store'
 import { useHistoryStore } from '@/stores/history_store'
@@ -20,21 +21,6 @@ export function ResolveConflicts() {
   const updateStatus = useIntegrationStore((s) => s.updateStatus)
   const addEntry = useHistoryStore((s) => s.addEntry)
 
-  if (!integration) {
-    return (
-      <EmptyState
-        icon={<AlertCircle className="w-10 h-10" />}
-        title="Integration not found"
-        description="The integration you're looking for doesn't exist or has been removed."
-        action={
-          <Link to="/" className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
-            Go back home
-          </Link>
-        }
-      />
-    )
-  }
-
   const resolvedCount = items.filter((i) => i.resolution !== null).length
   const allResolved = items.length > 0 && resolvedCount === items.length
 
@@ -51,8 +37,23 @@ export function ResolveConflicts() {
     })
   }, [items])
 
+  if (!integration) {
+    return (
+      <EmptyState
+        icon={<AlertCircle className="w-10 h-10" />}
+        title="Integration not found"
+        description="The integration you're looking for doesn't exist or has been removed."
+        action={
+          <Link to="/" className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+            Go back home
+          </Link>
+        }
+      />
+    )
+  }
+
   function handleMerge() {
-    if (!id || !allResolved) return
+    if (!id || !allResolved || !integration) return
     updateStatus(id, 'synced')
     clearResolved(id)
     addEntry({
@@ -60,10 +61,11 @@ export function ResolveConflicts() {
       integration_id: id,
       timestamp: new Date().toISOString(),
       source: 'User',
-      version: '',
+      version: integration.version,
       summary: `Conflict resolution — ${resolvedCount} fields merged`,
       changes: [],
     })
+    toast.success('Conflicts resolved', { description: `${resolvedCount} fields merged` })
     navigate(`/integrations/${id}`)
   }
 
@@ -101,17 +103,25 @@ export function ResolveConflicts() {
         </div>
       </div>
 
-      <div className="space-y-4">
-        {entityGroups.map(({ entity_type, entity_id, items: groupItems }) => (
-          <EntityGroup
-            key={`${entity_type}::${entity_id}`}
-            entity_type={entity_type}
-            entity_id={entity_id}
-            items={groupItems}
-            onResolve={resolve}
-          />
-        ))}
-      </div>
+      {entityGroups.length === 0 ? (
+        <EmptyState
+          icon={<Inbox className="w-10 h-10" />}
+          title="No conflicts to resolve"
+          description="There are currently no conflicts for this integration."
+        />
+      ) : (
+        <div className="space-y-4">
+          {entityGroups.map(({ entity_type, entity_id, items: groupItems }) => (
+            <EntityGroup
+              key={`${entity_type}::${entity_id}`}
+              entity_type={entity_type}
+              entity_id={entity_id}
+              items={groupItems}
+              onResolve={resolve}
+            />
+          ))}
+        </div>
+      )}
 
       <div className="flex items-center justify-end pt-4 border-t border-gray-100">
         <button

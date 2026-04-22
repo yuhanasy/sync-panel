@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { toast } from 'sonner'
 import { CheckCircle2, ArrowLeft, AlertCircle, Inbox } from 'lucide-react'
 import { useIntegrationStore } from '@/stores/integration_store'
 import { useHistoryStore } from '@/stores/history_store'
@@ -51,41 +52,46 @@ export function ReviewSync() {
   function handleApprove() {
     if (selected.size === 0) return
 
-    const versionParts = integration!.version.split('.').map(Number)
-    versionParts[2] = (versionParts[2] ?? 0) + 1
-    const newVersion = versionParts.join('.')
+    try {
+      const versionParts = integration!.version.split('.').map(Number)
+      versionParts[2] = (versionParts[2] ?? 0) + 1
+      const newVersion = versionParts.join('.')
 
-    bumpVersion(integration!.id)
+      bumpVersion(integration!.id)
 
-    const selectedChanges = pendingChanges.filter((c) => selected.has(c.id))
-    const addCount = selectedChanges.filter((c) => c.change_type === 'ADD').length
-    const updateCount = selectedChanges.filter((c) => c.change_type === 'UPDATE').length
-    const deleteCount = selectedChanges.filter((c) => c.change_type === 'DELETE').length
-    const summaryParts: string[] = []
-    if (addCount) summaryParts.push(`${addCount} added`)
-    if (updateCount) summaryParts.push(`${updateCount} updated`)
-    if (deleteCount) summaryParts.push(`${deleteCount} deleted`)
+      const selectedChanges = pendingChanges.filter((c) => selected.has(c.id))
+      const addCount = selectedChanges.filter((c) => c.change_type === 'ADD').length
+      const updateCount = selectedChanges.filter((c) => c.change_type === 'UPDATE').length
+      const deleteCount = selectedChanges.filter((c) => c.change_type === 'DELETE').length
+      const summaryParts: string[] = []
+      if (addCount) summaryParts.push(`${addCount} added`)
+      if (updateCount) summaryParts.push(`${updateCount} updated`)
+      if (deleteCount) summaryParts.push(`${deleteCount} deleted`)
 
-    addEntry({
-      id: `h-${Date.now()}`,
-      integration_id: integration!.id,
-      timestamp: new Date().toISOString(),
-      source: 'User',
-      version: newVersion,
-      summary: `Manual sync — ${summaryParts.join(', ')}`,
-      changes: selectedChanges.map((c) => ({
-        id: c.id,
-        entity_type: 'Record',
-        entity_id: c.id,
-        field_name: c.field_name,
-        change_type: c.change_type,
-        previous_value: c.current_value,
-        new_value: c.new_value,
-      })),
-    })
+      addEntry({
+        id: `h-${Date.now()}`,
+        integration_id: integration!.id,
+        timestamp: new Date().toISOString(),
+        source: 'User',
+        version: newVersion,
+        summary: `Manual sync — ${summaryParts.join(', ')}`,
+        changes: selectedChanges.map((c) => ({
+          id: c.id,
+          entity_type: 'Record',
+          entity_id: c.id,
+          field_name: c.field_name,
+          change_type: c.change_type,
+          previous_value: c.current_value,
+          new_value: c.new_value,
+        })),
+      })
 
-    updateStatus(integration!.id, 'synced')
-    navigate(`/integrations/${integration!.id}`)
+      updateStatus(integration!.id, 'synced')
+      toast.success('Sync approved', { description: `Applied ${selectedChanges.length} changes` })
+      navigate(`/integrations/${integration!.id}`)
+    } catch (error) {
+      toast.error('Failed to approve sync', { description: error instanceof Error ? error.message : 'Unknown error' })
+    }
   }
 
   return (
@@ -164,7 +170,7 @@ export function ReviewSync() {
 
       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
         <button
-          onClick={() => { updateStatus(integration.id, 'synced'); navigate(`/integrations/${integration.id}`) }}
+          onClick={() => navigate(`/integrations/${integration.id}`)}
           className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
         >
           Cancel Sync

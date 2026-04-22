@@ -1,7 +1,8 @@
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, ChevronRight, History } from 'lucide-react'
+import { ArrowLeft, ChevronRight, History, AlertCircle } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useHistoryStore } from '@/stores/history_store'
+import { useIntegrationStore } from '@/stores/integration_store'
 import type { HistoryEntry } from '@/types'
 import { EmptyState } from '@/components/ui/EmptyState'
 
@@ -22,6 +23,7 @@ function formatDate(iso: string) {
 
 export function SyncHistory() {
   const { id } = useParams<{ id: string }>()
+  const integration = useIntegrationStore((s) => s.integrations.find((i) => i.id === id))
 
   const entries = useHistoryStore(
     useShallow((s) =>
@@ -30,6 +32,21 @@ export function SyncHistory() {
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     )
   )
+
+  if (!integration) {
+    return (
+      <EmptyState
+        icon={<AlertCircle className="w-10 h-10" />}
+        title="Integration not found"
+        description="The integration you're looking for doesn't exist or has been removed."
+        action={
+          <Link to="/" className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+            Go back home
+          </Link>
+        }
+      />
+    )
+  }
 
   return (
     <div className="space-y-6">

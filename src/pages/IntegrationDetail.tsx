@@ -1,6 +1,7 @@
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { RefreshCw, History, AlertTriangle, XCircle, AlertCircle } from 'lucide-react'
+import { toast } from 'sonner'
 import { useIntegrationStore } from '@/stores/integration_store'
 import { mockHistory } from '@/data/history'
 import { StatusBadge } from '@/components/ui/StatusBadge'
@@ -64,6 +65,7 @@ export function IntegrationDetail() {
     syncMutation.mutate(integrationId, {
       onSuccess: (changes) => {
         setPendingChanges(changes)
+        toast.success('Sync data fetched', { description: `${changes.length} changes to review` })
         navigate(`/integrations/${integrationId}/review`)
       },
       onError: () => {
@@ -114,13 +116,22 @@ export function IntegrationDetail() {
             <p className="text-sm font-medium text-red-700">Sync failed</p>
             <p className="text-sm text-red-600 mt-0.5">{syncMutation.error?.message}</p>
           </div>
-          <button
-            onClick={() => syncMutation.reset()}
-            className="text-red-400 hover:text-red-600 text-xs underline"
-            aria-label="Dismiss error"
-          >
-            Dismiss
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleSyncNow}
+              className="text-red-600 hover:text-red-700 text-xs font-medium underline"
+              aria-label="Retry sync"
+            >
+              Retry
+            </button>
+            <button
+              onClick={() => syncMutation.reset()}
+              className="text-red-400 hover:text-red-600 text-xs underline"
+              aria-label="Dismiss error"
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
 

@@ -31,3 +31,10 @@
 - [x] Task 10: Edge cases + error states
 - [x] Task 11: Dockerfile + README
 - [x] ⛔ CHECKPOINT 7 (FINAL)
+
+## Phase 8: Edge Cases + Toast System
+- [x] Task 12: Install toast library + ErrorBoundary
+- [x] Task 13: Add success toasts to mutations
+- [x] Task 14: Fix data bugs + missing states
+- [x] Task 15: Error handling + minor polish
+- [x] ⛔ CHECKPOINT 8

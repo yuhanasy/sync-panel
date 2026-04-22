@@ -173,3 +173,55 @@ Multi-stage Dockerfile (Node build → nginx). nginx.conf with `try_files` for S
 - [x] Docker build + run works
 - [x] All 6 pages functional end-to-end
 - [x] Sync Now API works (real endpoint)
+
+---
+
+## Phase 8: Edge Cases + Toast System
+
+### Task 12 — Install toast library + ErrorBoundary
+Install `sonner` (lightweight toast library). Add `<Toaster />` in Shell. Create ErrorBoundary class component, wrap `<Outlet />` in Shell.
+
+**Criteria:** Toast library installed. `<Toaster />` renders. ErrorBoundary catches unhandled errors and shows fallback UI instead of white screen.
+
+**Files:** `package.json`, `src/components/ui/ErrorBoundary.tsx`, `src/components/layout/Shell.tsx`, `src/App.tsx`
+
+### Task 13 — Add success toasts to mutations
+- `ReviewSync.tsx`: Success toast after Approve (before navigate)
+- `ResolveConflicts.tsx`: Success toast after Merge (before navigate)
+- `IntegrationDetail.tsx`: Success toast after Sync fetch (before navigate)
+
+**Criteria:** Each action shows success toast. Toast message clear and actionable.
+
+**Files:** `src/pages/ReviewSync.tsx`, `src/pages/ResolveConflicts.tsx`, `src/pages/IntegrationDetail.tsx`
+
+### Task 14 — Fix data bugs + missing states
+- Fix `ResolveConflicts`: `handleMerge` uses `integration.version` instead of hardcoded empty string
+- Fix `ReviewSync`: Cancel button restores previous status (or navigate without mutating)
+- Add integration not-found guard to `SyncHistory.tsx` (distinguish "integration not found" vs "no history")
+- Add empty conflicts state to `ResolveConflicts.tsx` (show EmptyState when no conflicts)
+
+**Criteria:** History entries have proper version strings. Cancel sync doesn't corrupt status. All edge cases render expected UI.
+
+**Files:** `src/pages/ReviewSync.tsx`, `src/pages/ResolveConflicts.tsx`, `src/pages/SyncHistory.tsx`
+
+### Task 15 — Error handling + minor polish
+- `ReviewSync`: try/catch in `handleApprove`, show error toast on mutation fail
+- `ConflictAlert`: show conflict count (e.g. "3 conflicts")
+- `FieldConflict`: render fallback text (—) for null/empty values
+- `IntegrationDetail`: add Retry button alongside Dismiss in error banner
+
+**Criteria:** All errors show friendly toast. All edge cases render readable UI. No blank values.
+
+**Files:** `src/pages/ReviewSync.tsx`, `src/components/conflicts/FieldConflict.tsx`, `src/components/integrations/ConflictAlert.tsx`, `src/pages/IntegrationDetail.tsx`
+
+### ⛔ CHECKPOINT 8 — Stop and verify
+- [ ] `npm run dev` — manually test each page:
+  - Navigate to nonexistent integration → 404 state
+  - Navigate to `/integrations/:id/history` for integration with no history vs. nonexistent id
+  - Trigger sync → success toast → review → approve → success toast
+  - Resolve conflicts → merge → success toast
+  - Trigger sync error → see error banner with dismiss + retry
+  - Navigate to ResolveConflicts with no conflicts → empty state
+- [ ] `npm run test` — all tests pass
+- [ ] `npm run lint` — no lint errors
+- [ ] `npm run build` + `tsc --noEmit` pass
