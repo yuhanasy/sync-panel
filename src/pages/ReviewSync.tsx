@@ -12,6 +12,7 @@ export function ReviewSync() {
   const integration = useIntegrationStore((s) => s.integrations.find((i) => i.id === id))
   const pendingChanges = useIntegrationStore((s) => s.pending_changes)
   const bumpVersion = useIntegrationStore((s) => s.bumpVersion)
+  const updateStatus = useIntegrationStore((s) => s.updateStatus)
   const addEntry = useHistoryStore((s) => s.addEntry)
 
   const [selected, setSelected] = useState<Set<string>>(() => new Set(pendingChanges.map((c) => c.id)))
@@ -64,9 +65,18 @@ export function ReviewSync() {
       source: 'User',
       version: newVersion,
       summary: `Manual sync — ${summaryParts.join(', ')}`,
-      changes: [],
+      changes: selectedChanges.map((c) => ({
+        id: c.id,
+        entity_type: 'Record',
+        entity_id: c.id,
+        field_name: c.field_name,
+        change_type: c.change_type,
+        previous_value: c.current_value,
+        new_value: c.new_value,
+      })),
     })
 
+    updateStatus(integration!.id, 'synced')
     navigate(`/integrations/${integration!.id}`)
   }
 
@@ -142,7 +152,7 @@ export function ReviewSync() {
 
       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
         <button
-          onClick={() => navigate(`/integrations/${integration.id}`)}
+          onClick={() => { updateStatus(integration.id, 'synced'); navigate(`/integrations/${integration.id}`) }}
           className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
         >
           Cancel Sync

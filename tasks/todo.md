@@ -23,9 +23,9 @@
 - [ ] ⛔ CHECKPOINT 5
 
 ## Phase 6: Sync History
-- [ ] Task 8: Sync history page
-- [ ] Task 9: History detail page
-- [ ] ⛔ CHECKPOINT 6
+- [x] Task 8: Sync history page
+- [x] Task 9: History detail page
+- [x] ⛔ CHECKPOINT 6
 
 ## Phase 7: Polish + Docker
 - [ ] Task 10: Edge cases + error states

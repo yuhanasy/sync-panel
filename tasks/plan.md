@@ -147,10 +147,10 @@ Header "Integration – Version X.Y.Z". Stats cards (Added/Updated/Deleted/Total
 
 **Files:** `src/pages/HistoryDetail.tsx`, `src/components/history/VersionChangeCard.tsx`
 
-### ⛔ CHECKPOINT 6 — Stop and wait for review
-- [ ] History list and detail navigate correctly
-- [ ] Stats match change array counts
-- [ ] All change types (ADD/UPDATE/DELETE) render correctly
+### ✅ CHECKPOINT 6 — Passed
+- [x] History list and detail navigate correctly
+- [x] Stats match change array counts
+- [x] All change types (ADD/UPDATE/DELETE) render correctly
 
 ---
 

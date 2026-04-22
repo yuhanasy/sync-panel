@@ -22,6 +22,7 @@ export function IntegrationDetail() {
   const navigate = useNavigate()
   const integration = useIntegrationStore((s) => s.integrations.find((i) => i.id === id))
   const setPendingChanges = useIntegrationStore((s) => s.setPendingChanges)
+  const updateStatus = useIntegrationStore((s) => s.updateStatus)
   const syncMutation = useSyncNow()
 
   if (!integration) {
@@ -43,10 +44,14 @@ export function IntegrationDetail() {
   const syncDisabled = isConflict || isSyncing || syncMutation.isPending
 
   function handleSyncNow() {
+    updateStatus(integrationId, 'syncing')
     syncMutation.mutate(integrationId, {
       onSuccess: (changes) => {
         setPendingChanges(changes)
         navigate(`/integrations/${integrationId}/review`)
+      },
+      onError: () => {
+        updateStatus(integrationId, 'error')
       },
     })
   }
@@ -124,7 +129,7 @@ export function IntegrationDetail() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Sync Summary */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 overflow-hidden overflow-x-auto">
           <div className="px-5 py-4 border-b border-gray-100">
             <h2 className="text-sm font-medium text-gray-900">Recent Sync History</h2>
           </div>
