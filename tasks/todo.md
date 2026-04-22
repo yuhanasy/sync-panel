@@ -7,8 +7,8 @@
 - [x] ⛔ CHECKPOINT 1
 
 ## Phase 2: Integrations List
-- [ ] Task 4: Integrations list page
-- [ ] ⛔ CHECKPOINT 2
+- [x] Task 4: Integrations list page
+- [x] ⛔ CHECKPOINT 2
 
 ## Phase 3: Integration Detail
 - [ ] Task 5: Integration detail page

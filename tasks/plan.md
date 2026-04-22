@@ -75,9 +75,9 @@ Table: icon, name, status badge (Synced=green, Conflict=amber, Syncing=blue+puls
 **Files:** `src/pages/IntegrationsList.tsx`, `src/components/ui/StatusBadge.tsx`, `src/components/ui/SearchInput.tsx`
 
 ### ⛔ CHECKPOINT 2 — Stop and wait for review
-- [ ] All status badges correct color
-- [ ] Search + filter functional
-- [ ] Navigation to detail works
+- [x] All status badges correct color
+- [x] Search + filter functional
+- [x] Navigation to detail works
 
 ---
 
