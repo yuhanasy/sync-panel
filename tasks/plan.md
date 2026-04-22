@@ -124,10 +124,10 @@ Load pre-seeded conflict items. Group by entity (entity_type + entity_id header 
 
 **Files:** `src/pages/ResolveConflicts.tsx`, `src/components/conflicts/EntityGroup.tsx`, `src/components/conflicts/FieldConflict.tsx`
 
-### ⛔ CHECKPOINT 5 — Stop and wait for review
-- [ ] Full conflict resolution flow works
-- [ ] After merge, HubSpot → Synced status
-- [ ] Bulk accept actions work
+### ✅ CHECKPOINT 5 — Passed
+- [x] Full conflict resolution flow works
+- [x] After merge, HubSpot → Synced status
+- [x] Bulk accept actions work
 
 ---
 

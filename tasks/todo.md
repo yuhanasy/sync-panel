@@ -19,7 +19,7 @@
 - [x] ⛔ CHECKPOINT 4
 
 ## Phase 5: Conflict Resolution
-- [ ] Task 7: Resolve conflicts page
+- [x] Task 7: Resolve conflicts page
 - [ ] ⛔ CHECKPOINT 5
 
 ## Phase 6: Sync History
