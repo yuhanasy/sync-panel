@@ -1,9 +1,11 @@
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { RefreshCw, History, AlertTriangle, XCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { RefreshCw, History, AlertTriangle, XCircle, AlertCircle } from 'lucide-react'
 import { useIntegrationStore } from '@/stores/integration_store'
 import { mockHistory } from '@/data/history'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { StatCard } from '@/components/ui/StatCard'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { ConflictAlert } from '@/components/integrations/ConflictAlert'
 import { useSyncNow } from '@/api/sync_api'
 
@@ -25,11 +27,25 @@ export function IntegrationDetail() {
   const updateStatus = useIntegrationStore((s) => s.updateStatus)
   const syncMutation = useSyncNow()
 
+  const [isLoadingStats, setIsLoadingStats] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoadingStats(false), 500)
+    return () => clearTimeout(timer)
+  }, [])
+
   if (!integration) {
     return (
-      <div className="text-center py-20">
-        <p className="text-gray-500 text-sm">Integration not found.</p>
-      </div>
+      <EmptyState
+        icon={<AlertCircle className="w-10 h-10" />}
+        title="Integration not found"
+        description="The integration you're looking for doesn't exist or has been removed."
+        action={
+          <Link to="/" className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+            Go back home
+          </Link>
+        }
+      />
     )
   }
 
@@ -116,14 +132,17 @@ export function IntegrationDetail() {
         <StatCard
           label="Total Records"
           value={integration.total_records.toLocaleString()}
+          isLoading={isLoadingStats}
         />
         <StatCard
           label="Last Sync Duration"
           value={`${integration.last_sync_duration}s`}
+          isLoading={isLoadingStats}
         />
         <StatCard
           label="Last Synced"
           value={formatDate(integration.last_synced)}
+          isLoading={isLoadingStats}
         />
       </div>
 

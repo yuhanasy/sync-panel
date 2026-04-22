@@ -1,9 +1,10 @@
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, AlertCircle, FileText } from 'lucide-react'
 import { useHistoryStore } from '@/stores/history_store'
 import { useIntegrationStore } from '@/stores/integration_store'
 import { StatCard } from '@/components/ui/StatCard'
 import { VersionChangeCard } from '@/components/history/VersionChangeCard'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 export function HistoryDetail() {
   const { id, version } = useParams<{ id: string; version: string }>()
@@ -17,9 +18,16 @@ export function HistoryDetail() {
 
   if (!entry || !integration) {
     return (
-      <div className="text-center py-20">
-        <p className="text-gray-500 text-sm">History entry not found.</p>
-      </div>
+      <EmptyState
+        icon={<AlertCircle className="w-10 h-10" />}
+        title="History entry not found"
+        description="The requested history entry could not be found."
+        action={
+          <Link to={`/integrations/${id}/history`} className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+            Back to History
+          </Link>
+        }
+      />
     )
   }
 
@@ -51,9 +59,11 @@ export function HistoryDetail() {
       </div>
 
       {entry.changes.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-sm text-gray-400">No changes recorded for this version.</p>
-        </div>
+        <EmptyState
+          icon={<FileText className="w-10 h-10" />}
+          title="No detailed changes"
+          description="There are no specific field changes recorded for this version."
+        />
       ) : (
         <div className="space-y-3">
           <h2 className="text-sm font-medium text-gray-900">Detailed Changes</h2>

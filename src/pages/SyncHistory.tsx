@@ -1,8 +1,9 @@
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ChevronRight, History } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useHistoryStore } from '@/stores/history_store'
 import type { HistoryEntry } from '@/types'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 const SOURCE_STYLES: Record<HistoryEntry['source'], string> = {
   System: 'bg-blue-100 text-blue-700',
@@ -44,9 +45,11 @@ export function SyncHistory() {
       <h1 className="text-xl font-semibold text-gray-900">Sync History</h1>
 
       {entries.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-sm text-gray-400">No sync history yet.</p>
-        </div>
+        <EmptyState
+          icon={<History className="w-10 h-10" />}
+          title="No sync history yet"
+          description="When you sync your data, the history of those changes will appear here."
+        />
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden overflow-x-auto">
           <table className="w-full text-sm">

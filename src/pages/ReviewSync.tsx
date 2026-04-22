@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { CheckCircle2, ArrowLeft } from 'lucide-react'
+import { CheckCircle2, ArrowLeft, AlertCircle, Inbox } from 'lucide-react'
 import { useIntegrationStore } from '@/stores/integration_store'
 import { useHistoryStore } from '@/stores/history_store'
 import { ChangeCard } from '@/components/sync/ChangeCard'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 export function ReviewSync() {
   const { id } = useParams<{ id: string }>()
@@ -25,9 +26,16 @@ export function ReviewSync() {
 
   if (!integration) {
     return (
-      <div className="text-center py-20">
-        <p className="text-gray-500 text-sm">Integration not found.</p>
-      </div>
+      <EmptyState
+        icon={<AlertCircle className="w-10 h-10" />}
+        title="Integration not found"
+        description="The integration you're looking for doesn't exist or has been removed."
+        action={
+          <Link to="/" className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+            Go back home
+          </Link>
+        }
+      />
     )
   }
 
@@ -135,7 +143,11 @@ export function ReviewSync() {
       </div>
 
       {pendingChanges.length === 0 ? (
-        <div className="text-center py-12 text-sm text-gray-400">No pending changes.</div>
+        <EmptyState
+          icon={<Inbox className="w-10 h-10" />}
+          title="No pending changes"
+          description="There are currently no changes to review for this integration."
+        />
       ) : (
         <div className="space-y-3">
           <h2 className="text-sm font-medium text-gray-900">Detailed Changes</h2>

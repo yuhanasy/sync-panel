@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, GitMerge } from 'lucide-react'
+import { ArrowLeft, GitMerge, AlertCircle } from 'lucide-react'
 import { useConflictStore } from '@/stores/conflict_store'
 import { useIntegrationStore } from '@/stores/integration_store'
 import { useHistoryStore } from '@/stores/history_store'
 import { EntityGroup } from '@/components/conflicts/EntityGroup'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { useShallow } from 'zustand/react/shallow'
 
 export function ResolveConflicts() {
@@ -15,8 +16,24 @@ export function ResolveConflicts() {
   const resolve = useConflictStore((s) => s.resolve)
   const resolveAll = useConflictStore((s) => s.resolveAll)
   const clearResolved = useConflictStore((s) => s.clearResolved)
+  const integration = useIntegrationStore((s) => s.integrations.find((i) => i.id === id))
   const updateStatus = useIntegrationStore((s) => s.updateStatus)
   const addEntry = useHistoryStore((s) => s.addEntry)
+
+  if (!integration) {
+    return (
+      <EmptyState
+        icon={<AlertCircle className="w-10 h-10" />}
+        title="Integration not found"
+        description="The integration you're looking for doesn't exist or has been removed."
+        action={
+          <Link to="/" className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+            Go back home
+          </Link>
+        }
+      />
+    )
+  }
 
   const resolvedCount = items.filter((i) => i.resolution !== null).length
   const allResolved = items.length > 0 && resolvedCount === items.length

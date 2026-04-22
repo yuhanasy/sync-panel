@@ -91,9 +91,9 @@ Header (icon, name, status badge, version, Sync Now button). Conflict alert bann
 **Files:** `src/pages/IntegrationDetail.tsx`, `src/components/ui/StatCard.tsx`, `src/components/integrations/ConflictAlert.tsx`
 
 ### ⛔ CHECKPOINT 3 — Stop and wait for review
-- [ ] HubSpot detail shows conflict banner
-- [ ] Salesforce detail has no conflict banner
-- [ ] Quick Actions navigate correctly
+- [x] HubSpot detail shows conflict banner
+- [x] Salesforce detail has no conflict banner
+- [x] Quick Actions navigate correctly
 
 ---
 
@@ -168,8 +168,8 @@ Multi-stage Dockerfile (Node build → nginx). nginx.conf with `try_files` for S
 
 **Files:** `Dockerfile`, `nginx.conf`, `README.md`
 
-### ⛔ CHECKPOINT 7 (FINAL) — Stop and wait for review
-- [ ] `npm run build` + `tsc --noEmit` pass
-- [ ] Docker build + run works
-- [ ] All 6 pages functional end-to-end
-- [ ] Sync Now API works (real endpoint)
+### ✅ CHECKPOINT 7 (FINAL) — Passed
+- [x] `npm run build` + `tsc --noEmit` pass
+- [x] Docker build + run works
+- [x] All 6 pages functional end-to-end
+- [x] Sync Now API works (real endpoint)

@@ -7,6 +7,7 @@ import { ReviewSync } from '@/pages/ReviewSync'
 import { ResolveConflicts } from '@/pages/ResolveConflicts'
 import { SyncHistory } from '@/pages/SyncHistory'
 import { HistoryDetail } from '@/pages/HistoryDetail'
+import { NotFound } from '@/pages/NotFound'
 
 const queryClient = new QueryClient()
 
@@ -23,6 +24,7 @@ export default function App() {
             <Route path="/integrations/:id/history" element={<SyncHistory />} />
             <Route path="/integrations/:id/history/:version" element={<HistoryDetail />} />
           </Route>
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>

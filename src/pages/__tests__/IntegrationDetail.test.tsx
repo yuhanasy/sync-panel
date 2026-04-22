@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { vi } from 'vitest'
 import { IntegrationDetail } from '../IntegrationDetail'
 
 function renderDetail(id: string) {
@@ -53,13 +54,18 @@ describe('IntegrationDetail', () => {
   })
 
   describe('stats cards', () => {
+    beforeEach(() => vi.useFakeTimers())
+    afterEach(() => vi.useRealTimers())
+
     it('shows total records', () => {
       renderDetail('hubspot')
+      act(() => vi.runAllTimers())
       expect(screen.getByText('4,821')).toBeInTheDocument()
     })
 
     it('shows last sync duration', () => {
       renderDetail('hubspot')
+      act(() => vi.runAllTimers())
       expect(screen.getByText(/47/)).toBeInTheDocument()
     })
   })

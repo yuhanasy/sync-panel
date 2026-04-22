@@ -1,73 +1,66 @@
-# React + TypeScript + Vite
+# Portier Integration Sync Panel
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A web-based dashboard to manage data synchronization between local systems and external integrations like Salesforce, HubSpot, and Jira.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Integrations List**: View all connected applications and their current sync statuses.
+- **Sync Operations**: Trigger manual syncs with external providers.
+- **Conflict Resolution**: Handle data inconsistencies between local and external records with bulk resolution options.
+- **Change Review**: Inspect added, updated, or deleted records prior to committing them.
+- **Sync History**: Audit past synchronization events and their detailed changes.
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Prerequisites
 
-## Expanding the ESLint configuration
+- Node.js 18+ and npm
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Local Development
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. Install dependencies:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Start the development server:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+3. Open your browser and navigate to `http://localhost:5173`.
+
+## Docker Instructions
+
+To build and run the application locally using Docker:
+
+1. Build the image:
+
+```bash
+docker build -t sync-panel .
+```
+
+2. Run the container:
+
+```bash
+docker run -p 5173:80 sync-panel
+```
+
+3. Open your browser and navigate to `http://localhost:5173`.
+
+## Architecture & Stack
+
+- **Frontend Framework**: React 18 with Vite + TypeScript
+- **Styling**: Tailwind CSS v4 for utility-first styling.
+- **Routing**: React Router v6 for client-side routing.
+- **State Management**:
+  - Zustand for global application state (integrations, mock history, mock conflicts).
+  - TanStack Query (React Query) for managing server state (sync API call).
+- **Icons**: Lucide React
+
+## Assumptions
+
+- **Mock Data**: Since no full backend was provided for history and conflict data, robust mock data is pre-seeded in the Zustand stores. Changes made through the UI (sync approvals, conflict resolutions) will correctly mutate this mock state for testing purposes.
+- **API Handling**: The sync API endpoint (`/api/v1/data/sync?application_id=:id`) returns random changed values, random delays and random HTTP status codes to simulate real-world conditions. Error and success states are fully handled.

@@ -20,7 +20,7 @@
 
 ## Phase 5: Conflict Resolution
 - [x] Task 7: Resolve conflicts page
-- [ ] ⛔ CHECKPOINT 5
+- [x] ⛔ CHECKPOINT 5
 
 ## Phase 6: Sync History
 - [x] Task 8: Sync history page
@@ -28,6 +28,6 @@
 - [x] ⛔ CHECKPOINT 6
 
 ## Phase 7: Polish + Docker
-- [ ] Task 10: Edge cases + error states
-- [ ] Task 11: Dockerfile + README
-- [ ] ⛔ CHECKPOINT 7 (FINAL)
+- [x] Task 10: Edge cases + error states
+- [x] Task 11: Dockerfile + README
+- [x] ⛔ CHECKPOINT 7 (FINAL)
