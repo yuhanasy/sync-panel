@@ -1,5 +1,5 @@
 import type { ConflictItem } from '@/types'
-import { Users, Door, Key } from 'lucide-react'
+import { Users, DoorOpen, Key } from 'lucide-react'
 import { FieldConflict } from './FieldConflict'
 
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
 
 const entityIcons = {
   user: Users,
-  door: Door,
+  door: DoorOpen,
   key: Key,
 }
 
