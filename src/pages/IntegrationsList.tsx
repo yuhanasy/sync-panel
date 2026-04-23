@@ -41,7 +41,7 @@ export function IntegrationsList() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as Integration['status'] | 'all')}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-gray-400"
         >
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
