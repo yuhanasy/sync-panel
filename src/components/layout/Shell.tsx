@@ -20,8 +20,6 @@ function Breadcrumb() {
   const path = location.pathname
   if (id && path.endsWith('/review')) {
     segments.push({ label: 'Review Sync' })
-  } else if (id && path.endsWith('/conflicts')) {
-    segments.push({ label: 'Resolve Conflicts' })
   } else if (version) {
     segments.push({ label: 'History', href: `/integrations/${id}/history` })
     segments.push({ label: `v${version}` })
@@ -50,6 +48,8 @@ function Breadcrumb() {
 }
 
 export function Shell() {
+  const location = useLocation()
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200">
@@ -60,6 +60,30 @@ export function Shell() {
           <span className="text-gray-200">|</span>
           <Breadcrumb />
         </div>
+        <nav className="border-t border-gray-200 bg-gray-50">
+          <div className="max-w-6xl mx-auto px-6 flex items-center gap-4">
+            <Link
+              to="/"
+              className={`py-3 px-0 text-sm font-medium border-b-2 transition-colors ${
+                location.pathname === '/'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Integrations
+            </Link>
+            <Link
+              to="/local-data"
+              className={`py-3 px-0 text-sm font-medium border-b-2 transition-colors ${
+                location.pathname === '/local-data'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Local Data
+            </Link>
+          </div>
+        </nav>
       </header>
       <main className="max-w-6xl mx-auto px-6 py-8">
         <ErrorBoundary>

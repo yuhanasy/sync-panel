@@ -93,19 +93,28 @@ export function IntegrationDetail() {
             </div>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={handleSyncNow}
-          disabled={syncDisabled}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            syncDisabled
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
-          }`}
-        >
-          <RefreshCw className={`w-4 h-4 ${syncMutation.isPending || isSyncing ? 'animate-spin' : ''}`} />
-          Sync Now
-        </button>
+        {integration.status === 'pending_approve' ? (
+          <Link
+            to={`/integrations/${integration.id}/review`}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-yellow-600 text-white hover:bg-yellow-700 transition-colors"
+          >
+            Pending Review →
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={handleSyncNow}
+            disabled={syncDisabled}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              syncDisabled
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
+          >
+            <RefreshCw className={`w-4 h-4 ${syncMutation.isPending || isSyncing ? 'animate-spin' : ''}`} />
+            Sync Now
+          </button>
+        )}
       </div>
 
       {/* Sync error */}

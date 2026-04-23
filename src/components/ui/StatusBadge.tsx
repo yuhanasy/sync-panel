@@ -4,6 +4,7 @@ const config: Record<Integration['status'], { label: string; bg: string; text: s
   synced: { label: 'Synced', bg: 'bg-green-100', text: 'text-green-800', dot: 'bg-green-500' },
   syncing: { label: 'Syncing', bg: 'bg-blue-100', text: 'text-blue-800', dot: 'bg-blue-500' },
   conflict: { label: 'Conflict', bg: 'bg-amber-100', text: 'text-amber-800', dot: 'bg-amber-500' },
+  pending_approve: { label: 'Pending Review', bg: 'bg-yellow-100', text: 'text-yellow-800', dot: 'bg-yellow-500' },
   error: { label: 'Error', bg: 'bg-red-100', text: 'text-red-800', dot: 'bg-red-500' },
 }
 
