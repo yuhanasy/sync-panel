@@ -2,7 +2,7 @@ export interface Integration {
   id: string
   name: string
   icon_url: string
-  status: 'synced' | 'syncing' | 'conflict' | 'error' | 'pending_approve'
+  status: 'synced' | 'syncing' | 'conflict' | 'error' | 'pending_review'
   last_synced: string
   version: string
   total_records: number
@@ -38,6 +38,20 @@ export interface ConflictItem {
   local_value: string
   external_value: string
   resolution: 'local' | 'external' | null
+}
+
+export interface EnrichedChange {
+  id: string
+  entity_type: string
+  entity_id: string
+  field_name: string
+  change_type: 'ADD' | 'UPDATE' | 'DELETE' | 'CONFLICT'
+  current_value?: string
+  new_value?: string
+  // Only set when change_type === 'CONFLICT'
+  local_value?: string
+  external_value?: string
+  resolution?: 'local' | 'external' | null
 }
 
 export interface SyncChange {

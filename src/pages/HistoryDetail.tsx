@@ -65,10 +65,38 @@ export function HistoryDetail() {
           description="There are no specific field changes recorded for this version."
         />
       ) : (
-        <div className="space-y-3">
-          <h2 className="text-sm font-medium text-gray-900">Detailed Changes</h2>
-          {entry.changes.map((change) => (
-            <VersionChangeCard key={change.id} change={change} />
+        <div className="space-y-8 mt-6">
+          <h2 className="text-base font-medium text-gray-900">Detailed Changes</h2>
+          {Object.entries(
+            entry.changes.reduce((acc, change) => {
+              if (!acc[change.entity_type]) acc[change.entity_type] = {}
+              if (!acc[change.entity_type][change.entity_id]) acc[change.entity_type][change.entity_id] = []
+              acc[change.entity_type][change.entity_id].push(change)
+              return acc
+            }, {} as Record<string, Record<string, typeof entry.changes>>)
+          ).map(([entityType, entities]) => (
+            <div key={entityType} className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider border-b border-gray-200 pb-2">
+                {entityType}s
+              </h3>
+              <div className="space-y-4">
+                {Object.entries(entities).map(([entityId, changes]) => (
+                  <div key={entityId} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                      <span className="text-sm font-mono font-semibold text-gray-900">{entityId}</span>
+                      <span className="text-xs font-medium text-gray-500">
+                        {changes.length} change{changes.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    <div className="p-5 space-y-4">
+                      {changes.map((change) => (
+                        <VersionChangeCard key={change.id} change={change} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}

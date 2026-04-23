@@ -7,10 +7,11 @@ import { useIntegrationStore } from '@/stores/integration_store'
 import type { SyncChange } from '@/types'
 
 const mockChanges: SyncChange[] = [
-  { id: 'sc1', field_name: 'user.email', change_type: 'UPDATE', current_value: 'old@test.com', new_value: 'new@test.com' },
+  { id: 'sc1', field_name: 'user.email', change_type: 'UPDATE', current_value: 'jane@acmeltd.com', new_value: 'jane.new@acmeltd.com' },
   { id: 'sc2', field_name: 'user.status', change_type: 'ADD', new_value: 'active' },
   { id: 'sc3', field_name: 'key.id', change_type: 'DELETE', current_value: 'key-abc' },
 ]
+
 
 function renderReview(id = 'salesforce') {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })

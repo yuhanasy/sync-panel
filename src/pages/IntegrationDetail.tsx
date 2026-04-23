@@ -1,14 +1,22 @@
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { RefreshCw, History, AlertTriangle, XCircle, AlertCircle } from 'lucide-react'
+import { RefreshCw, XCircle, AlertCircle, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { useIntegrationStore } from '@/stores/integration_store'
-import { mockHistory } from '@/data/history'
+import { useHistoryStore } from '@/stores/history_store'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { StatCard } from '@/components/ui/StatCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ConflictAlert } from '@/components/integrations/ConflictAlert'
 import { useSyncNow } from '@/api/sync_api'
+import { useLocalEntityStore } from '@/stores/local_entity_store'
+import { enrichChanges } from '@/utils/enrich_changes'
+import type { HistoryEntry } from '@/types'
+
+const SOURCE_STYLES: Record<HistoryEntry['source'], string> = {
+  System: 'bg-blue-100 text-blue-700',
+  User: 'bg-purple-100 text-purple-700',
+}
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString(undefined, {
@@ -27,7 +35,11 @@ export function IntegrationDetail() {
   const setPendingChanges = useIntegrationStore((s) => s.setPendingChanges)
   const updateStatus = useIntegrationStore((s) => s.updateStatus)
   const syncMutation = useSyncNow()
-
+  const users = useLocalEntityStore((s) => s.users)
+  const doors = useLocalEntityStore((s) => s.doors)
+  const keys = useLocalEntityStore((s) => s.keys)
+  const realHistory = useHistoryStore((s) => s.entries)
+  
   const [isLoadingStats, setIsLoadingStats] = useState(true)
 
   useEffect(() => {
@@ -50,7 +62,7 @@ export function IntegrationDetail() {
     )
   }
 
-  const recentHistory = mockHistory
+  const recentHistory = realHistory
     .filter((h) => h.integration_id === integration.id)
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     .slice(0, 5)
@@ -65,6 +77,12 @@ export function IntegrationDetail() {
     syncMutation.mutate(integrationId, {
       onSuccess: (changes) => {
         setPendingChanges(changes)
+        
+        // Determine status immediately so back/cancel works correctly
+        const enriched = enrichChanges(changes, { users, doors, keys })
+        const hasConflicts = enriched.some(c => c.change_type === 'CONFLICT')
+        updateStatus(integrationId, hasConflicts ? 'conflict' : 'pending_review')
+
         toast.success('Sync data fetched', { description: `${changes.length} changes to review` })
         navigate(`/integrations/${integrationId}/review`)
       },
@@ -93,7 +111,7 @@ export function IntegrationDetail() {
             </div>
           </div>
         </div>
-        {integration.status === 'pending_approve' ? (
+        {integration.status === 'pending_review' ? (
           <Link
             to={`/integrations/${integration.id}/review`}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-yellow-600 text-white hover:bg-yellow-700 transition-colors"
@@ -166,30 +184,64 @@ export function IntegrationDetail() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Sync Summary */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 overflow-hidden overflow-x-auto">
-          <div className="px-5 py-4 border-b border-gray-100">
-            <h2 className="text-sm font-medium text-gray-900">Recent Sync History</h2>
-          </div>
+      {/* Sync Summary */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden overflow-x-auto">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="text-sm font-medium text-gray-900">Recent Sync History</h2>
+          <Link
+            to={`/integrations/${integration.id}/history`}
+            className="text-sm font-medium text-blue-600 hover:text-blue-700"
+          >
+            See all history &rarr;
+          </Link>
+        </div>
           {recentHistory.length === 0 ? (
             <div className="px-5 py-8 text-center text-sm text-gray-400">No sync history yet.</div>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-50 bg-gray-50">
-                  <th className="text-left px-5 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Version</th>
-                  <th className="text-left px-5 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Summary</th>
-                  <th className="text-left px-5 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Date</th>
+                <tr className="border-b border-gray-100 bg-gray-50">
+                  <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    Timestamp
+                  </th>
+                  <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    Source
+                  </th>
+                  <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    Version
+                  </th>
+                  <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    Summary
+                  </th>
+                  <th className="px-5 py-3" />
                 </tr>
               </thead>
               <tbody>
                 {recentHistory.map((entry) => (
-                  <tr key={entry.id} className="border-b border-gray-50 last:border-0">
-                    <td className="px-5 py-3 font-mono text-xs text-gray-500">v{entry.version}</td>
+                  <tr key={entry.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50">
+                    <td className="px-5 py-3 text-gray-500 whitespace-nowrap text-xs">
+                      {formatDate(entry.timestamp)}
+                    </td>
+                    <td className="px-5 py-3">
+                      <span className={`text-xs px-2 py-0.5 rounded font-medium ${SOURCE_STYLES[entry.source]}`}>
+                        {entry.source}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 font-mono text-xs text-gray-500">
+                      v{entry.version}
+                    </td>
                     <td className="px-5 py-3 text-gray-700">{entry.summary}</td>
-                    <td className="px-5 py-3 text-gray-400 whitespace-nowrap">
-                      {new Date(entry.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    <td className="px-5 py-3 text-right">
+                      {entry.version && (
+                        <Link
+                          to={`/integrations/${integrationId}/history/${entry.version}`}
+                          className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline whitespace-nowrap"
+                          aria-label="View changes"
+                        >
+                          View Changes
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </Link>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -197,30 +249,6 @@ export function IntegrationDetail() {
             </table>
           )}
         </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
-          <h2 className="text-sm font-medium text-gray-900">Quick Actions</h2>
-          <Link
-            to={`/integrations/${integration.id}/history`}
-            className="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-            aria-label="View history"
-          >
-            <History className="w-4 h-4 text-gray-400" />
-            View History
-          </Link>
-          {isConflict && (
-            <Link
-              to={`/integrations/${integration.id}/conflicts`}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg border border-amber-200 bg-amber-50 text-sm text-amber-800 hover:bg-amber-100 transition-colors"
-              aria-label="Resolve conflicts"
-            >
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
-              Resolve Conflicts
-            </Link>
-          )}
-        </div>
-      </div>
     </div>
   )
 }

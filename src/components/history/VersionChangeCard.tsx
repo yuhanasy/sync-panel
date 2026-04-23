@@ -12,17 +12,18 @@ interface Props {
 
 export function VersionChangeCard({ change }: Props) {
   return (
-    <div className="border border-gray-200 bg-white rounded-lg p-4">
-      <div className="flex items-center gap-3 mb-3 flex-wrap">
-        <span className="text-xs text-gray-400">{change.entity_type} · {change.entity_id}</span>
-        <span className="text-sm font-medium text-gray-900 font-mono">{change.field_name}</span>
+    <div className="border border-gray-200 rounded-lg p-4 bg-white transition-colors">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="flex-1 flex items-baseline gap-2">
+          <span className="text-sm font-medium text-gray-900 font-mono">{change.field_name}</span>
+        </div>
         <span className={`text-xs px-2 py-0.5 rounded font-medium ${BADGE_STYLES[change.change_type]}`}>
           {change.change_type}
         </span>
       </div>
-      <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-4">
         {change.change_type !== 'ADD' && (
-          <div>
+          <div className={change.change_type === 'DELETE' ? 'col-span-2' : ''}>
             <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Previous Value</p>
             <p className="text-sm font-mono text-gray-700 bg-gray-50 rounded px-2 py-1 break-all">
               {change.previous_value ?? '—'}
@@ -30,7 +31,7 @@ export function VersionChangeCard({ change }: Props) {
           </div>
         )}
         {change.change_type !== 'DELETE' && (
-          <div>
+          <div className={change.change_type === 'ADD' ? 'col-span-2' : ''}>
             <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">New Value</p>
             <p className="text-sm font-mono text-gray-700 bg-gray-50 rounded px-2 py-1 break-all">
               {change.new_value ?? '—'}

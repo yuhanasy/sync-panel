@@ -1,92 +1,25 @@
-import { useState, useMemo } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { toast } from 'sonner'
-import { CheckCircle2, ArrowLeft, AlertCircle, Inbox } from 'lucide-react'
-import { useIntegrationStore } from '@/stores/integration_store'
-import { useHistoryStore } from '@/stores/history_store'
-import { useLocalEntityStore } from '@/stores/local_entity_store'
+import { Link, useParams } from 'react-router-dom'
+import { CheckCircle2, ArrowLeft, AlertCircle, Inbox, Users, DoorOpen, Key } from 'lucide-react'
+import { useReviewSync } from '@/hooks/useReviewSync'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { EntityGroup } from '@/components/conflicts/EntityGroup'
-import { FieldConflict } from '@/components/conflicts/FieldConflict'
-import { detectConflicts } from '@/utils/conflict_detection'
-import type { ConflictItem } from '@/types'
 
 export function ReviewSync() {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-
-  const integration = useIntegrationStore((s) => s.integrations.find((i) => i.id === id))
-  const pendingChanges = useIntegrationStore((s) => s.pending_changes)
-  const bumpVersion = useIntegrationStore((s) => s.bumpVersion)
-  const updateStatus = useIntegrationStore((s) => s.updateStatus)
-  const addEntry = useHistoryStore((s) => s.addEntry)
-
-  const users = useLocalEntityStore((s) => s.users)
-  const doors = useLocalEntityStore((s) => s.doors)
-  const keys = useLocalEntityStore((s) => s.keys)
-  const applyUserChange = useLocalEntityStore((s) => s.applyUserChange)
-  const applyDoorChange = useLocalEntityStore((s) => s.applyDoorChange)
-  const applyKeyChange = useLocalEntityStore((s) => s.applyKeyChange)
-  const clearUserDirtyField = useLocalEntityStore((s) => s.clearUserDirtyField)
-  const clearDoorDirtyField = useLocalEntityStore((s) => s.clearDoorDirtyField)
-  const clearKeyDirtyField = useLocalEntityStore((s) => s.clearKeyDirtyField)
-
-  const [selected, setSelected] = useState<Set<string>>(() => new Set(pendingChanges.map((c) => c.id)))
-  const [resolutions, setResolutions] = useState<Map<string, 'local' | 'external'>>(new Map())
-
-  const { conflicts, cleanChanges } = useMemo(() => {
-    const detected = detectConflicts(pendingChanges, { users, doors, keys })
-    const conflictChangeIds = new Set(detected.map((c) => {
-      const [entityType, fieldName] = c.field_name.split('.')
-      return pendingChanges.find((ch) => {
-        const [chType, chField] = ch.field_name.split('.')
-        return chType === entityType && chField === fieldName && ch.change_type === 'UPDATE'
-      })?.id
-    }).filter(Boolean))
-
-    const conflictItems: ConflictItem[] = detected.map((dc) => ({
-      id: dc.id,
-      integration_id: id!,
-      entity_type: dc.entity_type,
-      entity_id: dc.local_id,
-      field_name: dc.field_name,
-      local_value: dc.local_value,
-      external_value: dc.external_value,
-      resolution: resolutions.get(dc.id) ?? null,
-    }))
-
-    const clean = pendingChanges.filter((c) => !conflictChangeIds.has(c.id))
-
-    return { conflicts: conflictItems, cleanChanges: clean }
-  }, [pendingChanges, users, doors, keys, resolutions, id])
-
-  const groupedConflicts = useMemo(() => {
-    const byType = new Map<string, Map<string, typeof conflicts>>()
-    for (const c of conflicts) {
-      if (!byType.has(c.entity_type)) byType.set(c.entity_type, new Map())
-      const byId = byType.get(c.entity_type)!
-      if (!byId.has(c.entity_id)) byId.set(c.entity_id, [])
-      byId.get(c.entity_id)!.push(c)
-    }
-    return byType
-  }, [conflicts])
-
-  const groupedCleanChanges = useMemo(() => {
-    const byType = new Map<string, typeof cleanChanges>()
-    for (const c of cleanChanges) {
-      const [entityType] = c.field_name.split('.')
-      if (!byType.has(entityType)) byType.set(entityType, [])
-      byType.get(entityType)!.push(c)
-    }
-    return byType
-  }, [cleanChanges])
-
-  const counts = useMemo(() => ({
-    add: cleanChanges.filter((c) => c.change_type === 'ADD').length,
-    update: cleanChanges.filter((c) => c.change_type === 'UPDATE').length,
-    delete: cleanChanges.filter((c) => c.change_type === 'DELETE').length,
-    conflict: conflicts.length,
-  }), [cleanChanges, conflicts])
+  const {
+    integration,
+    groupedChanges,
+    counts,
+    selected,
+    hasUnresolvedConflicts,
+    totalChanges,
+    handleToggle,
+    handleResolve,
+    handleSelectAll,
+    handleDeselectAll,
+    handleCancel,
+    handleApprove,
+  } = useReviewSync(id)
 
   if (!integration) {
     return (
@@ -101,129 +34,6 @@ export function ReviewSync() {
         }
       />
     )
-  }
-
-  function toggleChange(changeId: string) {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      if (next.has(changeId)) next.delete(changeId)
-      else next.add(changeId)
-      return next
-    })
-  }
-
-  function handleResolveConflict(conflictId: string, side: 'local' | 'external') {
-    setResolutions((prev) => new Map(prev).set(conflictId, side))
-  }
-
-  function handleCancel() {
-    const unresolvedCount = conflicts.filter((c) => c.resolution === null).length
-    const newStatus = unresolvedCount > 0 ? 'conflict' : 'pending_approve'
-    updateStatus(integration!.id, newStatus)
-    navigate(`/integrations/${integration!.id}`)
-  }
-
-  function handleApprove() {
-    if (selected.size === 0) return
-
-    try {
-      const versionParts = integration!.version.split('.').map(Number)
-      versionParts[2] = (versionParts[2] ?? 0) + 1
-      const newVersion = versionParts.join('.')
-
-      bumpVersion(integration!.id)
-
-      const selectedChanges = pendingChanges.filter((c) => selected.has(c.id))
-      const selectedConflicts = conflicts.filter((c) => resolutions.has(c.id))
-
-      // Apply resolved conflicts to local store
-      for (const conflict of selectedConflicts) {
-        const resolution = resolutions.get(conflict.id)
-        if (!resolution) continue
-
-        const [entityType, fieldName] = conflict.field_name.split('.')
-        const changeForConflict = pendingChanges.find((c) => {
-          const [chType, chField] = c.field_name.split('.')
-          return chType === entityType && chField === fieldName && c.change_type === 'UPDATE'
-        })
-
-        if (!changeForConflict) continue
-
-        if (resolution === 'external') {
-          if (entityType === 'user') {
-            applyUserChange(changeForConflict)
-          } else if (entityType === 'door') {
-            applyDoorChange(changeForConflict)
-          } else if (entityType === 'key') {
-            applyKeyChange(changeForConflict)
-          }
-        }
-      }
-
-      // Clear dirty flags for resolved conflict fields
-      for (const conflict of selectedConflicts) {
-        const [entityType, fieldName] = conflict.field_name.split('.')
-        const entityId = conflict.entity_id
-        if (entityType === 'user') clearUserDirtyField(entityId, fieldName)
-        else if (entityType === 'door') clearDoorDirtyField(entityId, fieldName)
-        else if (entityType === 'key') clearKeyDirtyField(entityId, fieldName)
-      }
-
-      // Apply clean changes to local store
-      for (const change of selectedChanges) {
-        const [entityType] = change.field_name.split('.')
-        if (entityType === 'user') {
-          applyUserChange(change)
-        } else if (entityType === 'door') {
-          applyDoorChange(change)
-        } else if (entityType === 'key') {
-          applyKeyChange(change)
-        }
-      }
-
-      // Build history changes with real entity_type/entity_id from conflicts
-      const historyChanges = selectedChanges.map((c) => {
-        const conflictForChange = conflicts.find((conf) => {
-          const [confType, confField] = conf.field_name.split('.')
-          const [chType, chField] = c.field_name.split('.')
-          return confType === chType && confField === chField && c.change_type === 'UPDATE'
-        })
-
-        return {
-          id: c.id,
-          entity_type: conflictForChange?.entity_type ?? 'Record',
-          entity_id: conflictForChange?.entity_id ?? c.id,
-          field_name: c.field_name,
-          change_type: c.change_type,
-          previous_value: c.current_value,
-          new_value: c.new_value,
-        }
-      })
-
-      const addCount = selectedChanges.filter((c) => c.change_type === 'ADD').length
-      const updateCount = selectedChanges.filter((c) => c.change_type === 'UPDATE').length
-      const deleteCount = selectedChanges.filter((c) => c.change_type === 'DELETE').length
-      const summaryParts: string[] = []
-      if (addCount) summaryParts.push(`${addCount} added`)
-      if (updateCount) summaryParts.push(`${updateCount} updated`)
-      if (deleteCount) summaryParts.push(`${deleteCount} deleted`)
-
-      addEntry({
-        id: `h-${Date.now()}`,
-        integration_id: integration!.id,
-        timestamp: new Date().toISOString(),
-        source: 'User',
-        version: newVersion,
-        summary: `Manual sync — ${summaryParts.join(', ')}`,
-        changes: historyChanges,
-      })
-
-      updateStatus(integration!.id, 'synced')
-      toast.success('Sync approved', { description: `Applied ${selectedChanges.length} changes` })
-      navigate(`/integrations/${integration!.id}`)
-    } catch (error) {
-      toast.error('Failed to approve sync', { description: error instanceof Error ? error.message : 'Unknown error' })
-    }
   }
 
   return (
@@ -245,50 +55,50 @@ export function ReviewSync() {
         </p>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-        <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+      <div className={`border rounded-lg p-4 flex items-start gap-3 ${
+        counts.conflict > 0 ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'
+      }`}>
+        {counts.conflict > 0 ? (
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+        ) : (
+          <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+        )}
         <div>
-          <p className="text-sm font-medium text-blue-800">Approval Required</p>
-          <p className="text-sm text-blue-600 mt-0.5">
-            This sync will update your integration. Please review all changes before approving.
+          <p className={`text-sm font-medium ${counts.conflict > 0 ? 'text-amber-800' : 'text-blue-800'}`}>
+            {counts.conflict > 0 ? 'Conflicts Detected' : 'Approval Required'}
+          </p>
+          <p className={`text-sm mt-0.5 ${counts.conflict > 0 ? 'text-amber-700' : 'text-blue-600'}`}>
+            {counts.conflict > 0
+              ? `There ${counts.conflict === 1 ? 'is 1 conflict' : `are ${counts.conflict} conflicts`} that must be resolved before this sync can be fully approved.`
+              : 'This sync will update your integration. Please review all changes before approving.'}
           </p>
         </div>
       </div>
 
+      {/* Summary stats */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-        <StatBox label="Added" value={counts.add} />
-        <StatBox label="Updated" value={counts.update} />
-        <StatBox label="Deleted" value={counts.delete} />
+        <StatBox label="Added"    value={counts.add} />
+        <StatBox label="Updated"  value={counts.update} />
+        <StatBox label="Deleted"  value={counts.delete} />
         <StatBox label="Conflicts" value={counts.conflict} />
-        <StatBox label="Total" value={pendingChanges.length} />
+        <StatBox label="Total"    value={counts.total} />
       </div>
 
+      {/* Select / deselect controls */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setSelected(new Set([...cleanChanges.map((c) => c.id), ...conflicts.filter((c) => c.resolution).map((c) => {
-              const changeForConflict = pendingChanges.find((ch) => {
-                const [chType, chField] = ch.field_name.split('.')
-                const [cType, cField] = c.field_name.split('.')
-                return chType === cType && chField === cField && ch.change_type === 'UPDATE'
-              })
-              return changeForConflict?.id || ''
-            }).filter(Boolean)]))}
-            className="text-sm text-blue-600 hover:underline"
-          >
+          <button onClick={handleSelectAll} className="text-sm text-blue-600 hover:underline">
             Select All
           </button>
-          <button
-            onClick={() => setSelected(new Set())}
-            className="text-sm text-gray-500 hover:underline"
-          >
+          <button onClick={handleDeselectAll} className="text-sm text-gray-500 hover:underline">
             Deselect All
           </button>
         </div>
-        <span className="text-sm text-gray-500">{selected.size} of {pendingChanges.length} selected</span>
+        <span className="text-sm text-gray-500">{selected.size} of {totalChanges} selected</span>
       </div>
 
-      {pendingChanges.length === 0 ? (
+      {/* Change list */}
+      {totalChanges === 0 ? (
         <EmptyState
           icon={<Inbox className="w-10 h-10" />}
           title="No pending changes"
@@ -296,131 +106,31 @@ export function ReviewSync() {
         />
       ) : (
         <div className="space-y-6">
-          {conflicts.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-sm font-medium text-gray-900">Conflicting Changes</h2>
-              <div className="space-y-4">
-                {Array.from(groupedConflicts.entries()).map(([entityType, byId]) => (
-                  <div key={entityType} className="space-y-2">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{entityType}s</p>
-                    {Array.from(byId.entries()).map(([entityId, items]) => (
-                      <EntityGroup
-                        key={entityId}
-                        entity_type={entityType}
-                        entity_id={entityId}
-                        items={items}
-                        onResolve={handleResolveConflict}
-                      />
-                    ))}
-                  </div>
+          {Array.from(groupedChanges.entries()).map(([entityType, byId]) => (
+            <div key={entityType} className="space-y-3">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 w-fit">
+                {(() => { const Icon = { user: Users, door: DoorOpen, key: Key }[entityType as 'user' | 'door' | 'key'] ?? Users; return <Icon className="w-4 h-4 text-blue-600" /> })()}
+                <span className="text-xs font-medium text-blue-700 capitalize">{entityType}s</span>
+              </div>
+              <div className="space-y-3">
+                {Array.from(byId.entries()).map(([entityId, changes]) => (
+                  <EntityGroup
+                    key={`${entityType}-${entityId}`}
+                    entity_type={entityType}
+                    entity_id={entityId}
+                    changes={changes}
+                    selected={selected}
+                    onToggle={handleToggle}
+                    onResolve={handleResolve}
+                  />
                 ))}
               </div>
             </div>
-          )}
-
-          {cleanChanges.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-sm font-medium text-gray-900">Clean Changes</h2>
-              <div className="space-y-4">
-                {Array.from(groupedCleanChanges.entries()).map(([entityType, changes]) => {
-                  const getEntityIdForChange = (change: typeof cleanChanges[0]) => {
-                    const [, fieldName] = change.field_name.split('.')
-
-                    // First try to find from conflicts
-                    const conflictItem = conflicts.find((conf) => {
-                      const [confType, confField] = conf.field_name.split('.')
-                      const [chType, chField] = change.field_name.split('.')
-                      return confType === chType && confField === chField
-                    })
-                    if (conflictItem) return conflictItem.entity_id
-
-                    // Otherwise try to find from local entities
-                    if (entityType === 'user') {
-                      const user = users.find((u) => u[fieldName as keyof typeof u] === change.current_value)
-                      if (user) return user.local_id
-                    } else if (entityType === 'door') {
-                      const door = doors.find((d) => d[fieldName as keyof typeof d] === change.current_value)
-                      if (door) return door.local_id
-                    } else if (entityType === 'key') {
-                      const key = keys.find((k) => k[fieldName as keyof typeof k] === change.current_value)
-                      if (key) return key.local_id
-                    }
-
-                    return 'unknown'
-                  }
-
-                  const entityIds = new Set<string>()
-                  changes.forEach((c) => {
-                    entityIds.add(getEntityIdForChange(c))
-                  })
-
-                  if (entityIds.size === 0) {
-                    return (
-                      <div key={entityType} className="space-y-2">
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{entityType}s</p>
-                        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden px-5">
-                          {changes.map((change) => (
-                            <FieldConflict
-                              key={change.id}
-                              item={{
-                                id: change.id,
-                                integration_id: id!,
-                                entity_type: entityType,
-                                entity_id: 'unknown',
-                                field_name: change.field_name,
-                                local_value: change.current_value || '',
-                                external_value: change.new_value || '',
-                                resolution: null,
-                              }}
-                              isResolvable={false}
-                              selected={selected.has(change.id)}
-                              onToggle={() => toggleChange(change.id)}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )
-                  }
-
-                  return Array.from(entityIds).map((entityId) => {
-                    const itemsForEntity = changes.filter((c) => getEntityIdForChange(c) === entityId)
-
-                    return (
-                      <div key={`${entityType}-${entityId}`} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-                          <span className="text-sm font-mono font-semibold text-gray-900">{entityId}</span>
-                          <span className="text-xs font-medium text-gray-500">{itemsForEntity.length} change{itemsForEntity.length !== 1 ? 's' : ''}</span>
-                        </div>
-                        <div className="px-5">
-                          {itemsForEntity.map((change) => (
-                            <FieldConflict
-                              key={change.id}
-                              item={{
-                                id: change.id,
-                                integration_id: id!,
-                                entity_type: entityType,
-                                entity_id: entityId,
-                                field_name: change.field_name,
-                                local_value: change.current_value || '',
-                                external_value: change.new_value || '',
-                                resolution: null,
-                              }}
-                              isResolvable={false}
-                              selected={selected.has(change.id)}
-                              onToggle={() => toggleChange(change.id)}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )
-                  })
-                })}
-              </div>
-            </div>
-          )}
+          ))}
         </div>
       )}
 
+      {/* Footer actions */}
       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
         <button
           onClick={handleCancel}
@@ -428,14 +138,21 @@ export function ReviewSync() {
         >
           Cancel Sync
         </button>
-        <button
-          onClick={handleApprove}
-          disabled={selected.size === 0 || conflicts.some((c) => c.resolution === null)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-        >
-          <CheckCircle2 className="w-4 h-4" />
-          Approve {selected.size} Changes
-        </button>
+        <div className="flex items-center gap-3">
+          {(selected.size === 0 || hasUnresolvedConflicts) && (
+            <span className="text-sm text-red-600 font-medium">
+              {selected.size === 0 ? 'Select at least one change to approve' : 'Resolve all selected conflicts first'}
+            </span>
+          )}
+          <button
+            onClick={handleApprove}
+            disabled={selected.size === 0 || hasUnresolvedConflicts}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            Approve {selected.size} Changes
+          </button>
+        </div>
       </div>
     </div>
   )

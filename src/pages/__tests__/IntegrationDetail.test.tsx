@@ -79,24 +79,13 @@ describe('IntegrationDetail', () => {
     })
   })
 
-  describe('quick actions', () => {
-    it('always shows View History link', () => {
+  describe('history table header', () => {
+    it('shows See all history link', () => {
       renderDetail('salesforce')
-      expect(screen.getByRole('link', { name: /view history/i })).toHaveAttribute(
+      expect(screen.getByRole('link', { name: /see all history/i })).toHaveAttribute(
         'href',
         '/integrations/salesforce/history'
       )
-    })
-
-    it('shows Resolve Conflicts action for conflict status', () => {
-      renderDetail('hubspot')
-      const links = screen.getAllByRole('link', { name: /resolve conflicts/i })
-      expect(links.length).toBeGreaterThanOrEqual(1)
-    })
-
-    it('does not show Resolve Conflicts action for synced status', () => {
-      renderDetail('salesforce')
-      expect(screen.queryByRole('link', { name: /resolve conflicts/i })).not.toBeInTheDocument()
     })
   })
 

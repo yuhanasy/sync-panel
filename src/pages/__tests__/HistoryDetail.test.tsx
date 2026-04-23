@@ -76,8 +76,8 @@ describe('HistoryDetail', () => {
 
   it('ADD change shows new_value only', () => {
     renderPage()
-    // c3: entity_type=Company, entity_id=co-001, field=name, ADD, new_value='Acme Corp'
-    expect(screen.getByText('Acme Corp')).toBeInTheDocument()
+    // c3: entity_type=door, entity_id=door_3, field=name, ADD, new_value='Main Entrance'
+    expect(screen.getByText('Main Entrance')).toBeInTheDocument()
   })
 
   it('UPDATE change shows previous_value', () => {

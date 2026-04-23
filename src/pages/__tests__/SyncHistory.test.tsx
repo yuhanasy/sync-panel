@@ -28,9 +28,9 @@ describe('SyncHistory', () => {
 
   it('shows history entries for integration', () => {
     renderPage()
-    expect(screen.getByText('Scheduled sync — 12 contacts updated')).toBeInTheDocument()
-    expect(screen.getByText('Manual sync — deal pipeline updated')).toBeInTheDocument()
-    expect(screen.getByText('Scheduled sync — contact deleted')).toBeInTheDocument()
+    expect(screen.getByText('Scheduled sync — 12 users updated')).toBeInTheDocument()
+    expect(screen.getByText('Manual sync — door status updated')).toBeInTheDocument()
+    expect(screen.getByText('Scheduled sync — user deleted')).toBeInTheDocument()
   })
 
   it('does not show entries from other integrations', () => {
