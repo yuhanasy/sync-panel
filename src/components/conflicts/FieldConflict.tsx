@@ -13,38 +13,56 @@ function formatValue(value: unknown): string {
 }
 
 export function FieldConflict({ item, onResolve }: Props) {
+  const fieldName = item.field_name.split('.').pop() ?? item.field_name
+  const isResolved = item.resolution !== null
+
   return (
-    <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center py-3 border-b border-gray-50 last:border-0">
-      <div className={`rounded-lg border p-3 ${item.resolution === 'local' ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-white'}`}>
-        <p className="text-xs text-gray-500 mb-1">Local</p>
-        <p className="text-sm font-mono text-gray-800 break-all">{formatValue(item.local_value)}</p>
-        <button
-          onClick={() => onResolve(item.id, 'local')}
-          className={`mt-2 text-xs px-2 py-1 rounded font-medium transition-colors ${
-            item.resolution === 'local'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-700'
-          }`}
-        >
-          Use This
-        </button>
+    <div className="space-y-4 py-4 border-b border-gray-100 last:border-0">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-gray-900">{fieldName}</h3>
+        {!isResolved && (
+          <span className="text-xs font-medium text-red-600">Selection required</span>
+        )}
       </div>
 
-      <div className="text-center text-xs text-gray-400 font-medium">{item.field_name.split('.').pop()}</div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-gray-700">Current (Local)</span>
+            <button
+              onClick={() => onResolve(item.id, 'local')}
+              className={`text-xs font-medium px-3 py-1 rounded transition-colors ${
+                item.resolution === 'local'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-700'
+              }`}
+            >
+              Use This
+            </button>
+          </div>
+          <div className={`rounded-lg border p-3 ${item.resolution === 'local' ? 'border-blue-300 bg-blue-50' : 'border-gray-200 bg-white'}`}>
+            <p className="text-sm font-mono text-gray-800 break-all">{formatValue(item.local_value)}</p>
+          </div>
+        </div>
 
-      <div className={`rounded-lg border p-3 ${item.resolution === 'external' ? 'border-amber-400 bg-amber-50' : 'border-gray-200 bg-white'}`}>
-        <p className="text-xs text-gray-500 mb-1">External</p>
-        <p className="text-sm font-mono text-gray-800 break-all">{formatValue(item.external_value)}</p>
-        <button
-          onClick={() => onResolve(item.id, 'external')}
-          className={`mt-2 text-xs px-2 py-1 rounded font-medium transition-colors ${
-            item.resolution === 'external'
-              ? 'bg-amber-500 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-amber-50 hover:text-amber-700'
-          }`}
-        >
-          Use This
-        </button>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-gray-700">New (External)</span>
+            <button
+              onClick={() => onResolve(item.id, 'external')}
+              className={`text-xs font-medium px-3 py-1 rounded transition-colors ${
+                item.resolution === 'external'
+                  ? 'bg-amber-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-amber-50 hover:text-amber-700'
+              }`}
+            >
+              Use This
+            </button>
+          </div>
+          <div className={`rounded-lg border p-3 ${item.resolution === 'external' ? 'border-amber-300 bg-amber-50' : 'border-gray-200 bg-white'}`}>
+            <p className="text-sm font-mono text-gray-800 break-all">{formatValue(item.external_value)}</p>
+          </div>
+        </div>
       </div>
     </div>
   )

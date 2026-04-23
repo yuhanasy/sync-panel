@@ -306,6 +306,7 @@ export function ReviewSync() {
                     {Array.from(byId.entries()).map(([entityId, items]) => (
                       <EntityGroup
                         key={entityId}
+                        entity_type={entityType}
                         entity_id={entityId}
                         items={items}
                         onResolve={handleResolveConflict}
