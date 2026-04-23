@@ -52,13 +52,14 @@ docker run -p 5173:80 sync-panel
 
 ## Architecture & Stack
 
-- **Frontend Framework**: React 18 with Vite + TypeScript
+- **Frontend Framework**: React 19 with Vite + TypeScript
 - **Styling**: Tailwind CSS v4 for utility-first styling.
-- **Routing**: React Router v6 for client-side routing.
+- **Routing**: React Router v7 for client-side routing.
 - **State Management**:
   - Zustand for global application state (integrations, mock history, mock conflicts).
   - TanStack Query (React Query) for managing server state (sync API call).
 - **Icons**: Lucide React
+- **Architecture Pattern**: Separation of concerns with custom hooks (e.g., `useReviewSync`) extracting business logic from UI components, paired with utility functions for data transformation and grouping.
 
 ## Assumptions
 
