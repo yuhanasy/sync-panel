@@ -5,6 +5,8 @@ import { useIntegrationStore } from '@/stores/integration_store'
 import { StatCard } from '@/components/ui/StatCard'
 import { VersionChangeCard } from '@/components/history/VersionChangeCard'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { calcChangeStats } from '@/utils/history_utils'
+import { groupChanges } from '@/utils/group_changes'
 
 export function HistoryDetail() {
   const { id, version } = useParams<{ id: string; version: string }>()
@@ -31,10 +33,8 @@ export function HistoryDetail() {
     )
   }
 
-  const added = entry.changes.filter((c) => c.change_type === 'ADD').length
-  const updated = entry.changes.filter((c) => c.change_type === 'UPDATE').length
-  const deleted = entry.changes.filter((c) => c.change_type === 'DELETE').length
-  const total = entry.changes.length
+  const { added, updated, deleted, total } = calcChangeStats(entry.changes)
+  const grouped = groupChanges(entry.changes)
 
   return (
     <div className="space-y-6">
@@ -67,20 +67,13 @@ export function HistoryDetail() {
       ) : (
         <div className="space-y-8 mt-6">
           <h2 className="text-base font-medium text-gray-900">Detailed Changes</h2>
-          {Object.entries(
-            entry.changes.reduce((acc, change) => {
-              if (!acc[change.entity_type]) acc[change.entity_type] = {}
-              if (!acc[change.entity_type][change.entity_id]) acc[change.entity_type][change.entity_id] = []
-              acc[change.entity_type][change.entity_id].push(change)
-              return acc
-            }, {} as Record<string, Record<string, typeof entry.changes>>)
-          ).map(([entityType, entities]) => (
+          {Array.from(grouped).map(([entityType, entities]) => (
             <div key={entityType} className="space-y-4">
               <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider border-b border-gray-200 pb-2">
                 {entityType}s
               </h3>
               <div className="space-y-4">
-                {Object.entries(entities).map(([entityId, changes]) => (
+                {Array.from(entities).map(([entityId, changes]) => (
                   <div key={entityId} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                     <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                       <span className="text-sm font-mono font-semibold text-gray-900">{entityId}</span>

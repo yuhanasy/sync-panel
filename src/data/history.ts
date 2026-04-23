@@ -145,40 +145,40 @@ export const mockHistory: HistoryEntry[] = [
       { id: 'c21', entity_type: 'key', entity_id: 'key_6', field_name: 'record', change_type: 'DELETE', previous_value: 'contractor_key' },
     ],
   },
-  // Shopify
+  // Slack
   {
     id: 'h13',
-    integration_id: 'shopify',
+    integration_id: 'slack',
     timestamp: '2026-04-22T06:00:00Z',
     source: 'System',
     version: '6.0.2',
-    summary: 'Scheduled sync — hardware catalog',
+    summary: 'Scheduled sync — channel memberships updated',
     changes: [
-      { id: 'c22', entity_type: 'door', entity_id: 'door_8', field_name: 'device_id', change_type: 'UPDATE', previous_value: 'DEV-001', new_value: 'DEV-002' },
-      { id: 'c23', entity_type: 'door', entity_id: 'door_9', field_name: 'battery_level', change_type: 'UPDATE', previous_value: '100', new_value: '85' },
+      { id: 'c22', entity_type: 'user', entity_id: 'user_10', field_name: 'channel', change_type: 'UPDATE', previous_value: '#general', new_value: '#engineering' },
+      { id: 'c23', entity_type: 'user', entity_id: 'user_11', field_name: 'status', change_type: 'UPDATE', previous_value: 'inactive', new_value: 'active' },
     ],
   },
   {
     id: 'h14',
-    integration_id: 'shopify',
+    integration_id: 'slack',
     timestamp: '2026-04-21T06:00:00Z',
     source: 'System',
     version: '6.0.1',
-    summary: 'Scheduled sync — key assignments',
+    summary: 'Scheduled sync — workspace roles updated',
     changes: [
-      { id: 'c24', entity_type: 'key', entity_id: 'key_7', field_name: 'status', change_type: 'UPDATE', previous_value: 'pending', new_value: 'active' },
+      { id: 'c24', entity_type: 'user', entity_id: 'user_12', field_name: 'role', change_type: 'UPDATE', previous_value: 'member', new_value: 'admin' },
     ],
   },
   {
     id: 'h15',
-    integration_id: 'shopify',
+    integration_id: 'slack',
     timestamp: '2026-04-20T06:00:00Z',
     source: 'User',
     version: '6.0.0',
     summary: 'Initial full sync',
     changes: [
-      { id: 'c25', entity_type: 'door', entity_id: 'door_10', field_name: 'record', change_type: 'ADD', new_value: 'Warehouse Gate' },
-      { id: 'c26', entity_type: 'user', entity_id: 'user_9', field_name: 'record', change_type: 'ADD', new_value: 'Alice Smith' },
+      { id: 'c25', entity_type: 'user', entity_id: 'user_13', field_name: 'record', change_type: 'ADD', new_value: 'Bob Johnson' },
+      { id: 'c26', entity_type: 'key', entity_id: 'key_8', field_name: 'record', change_type: 'ADD', new_value: 'slack_api_key' },
     ],
   },
 ]

@@ -88,10 +88,10 @@ export function FieldConflict({
       {change.change_type === "UPDATE" && (
         <div className="ml-7 grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <span className="text-xs font-medium text-gray-500">Current</span>
+            <span className="text-xs font-medium text-gray-500">Local</span>
             <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
               <p className="text-sm font-mono text-gray-800 break-all">
-                {formatValue(change.current_value)}
+                {formatValue(change.local_value)}
               </p>
             </div>
           </div>

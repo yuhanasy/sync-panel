@@ -121,13 +121,15 @@ export function enrichChanges(
         change_type: 'DELETE',
         current_value: change.current_value,
         new_value: change.new_value,
+        committed_value: String(targetEntity[fieldName as keyof typeof targetEntity] ?? ''),
       })
       continue
     }
 
     // ── UPDATE — check for CONFLICT ──────────────────────────────────────────
     const isDirty = targetEntity.dirty_fields.includes(fieldName)
-    const localValue = String(targetEntity[fieldName as keyof typeof targetEntity] ?? '')
+    const committedValue = String(targetEntity[fieldName as keyof typeof targetEntity] ?? '')
+    const localValue = targetEntity.pending_values[fieldName] ?? committedValue
     const externalValue = change.new_value ?? ''
     const isConflict = isDirty && localValue !== externalValue
 
@@ -140,6 +142,7 @@ export function enrichChanges(
         change_type: 'CONFLICT',
         current_value: change.current_value,
         new_value: change.new_value,
+        committed_value: committedValue,
         local_value: localValue,
         external_value: externalValue,
         resolution: null,
@@ -153,6 +156,8 @@ export function enrichChanges(
         change_type: 'UPDATE',
         current_value: change.current_value,
         new_value: change.new_value,
+        committed_value: committedValue,
+        local_value: committedValue,
       })
     }
   }

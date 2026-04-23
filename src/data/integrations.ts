@@ -52,9 +52,9 @@ export const mockIntegrations: Integration[] = [
     last_sync_duration: 18,
   },
   {
-    id: 'shopify',
-    name: 'Shopify',
-    icon_url: 'https://cdn.worldvectorlogo.com/logos/shopify.svg',
+    id: 'slack',
+    name: 'Slack',
+    icon_url: 'https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg',
     status: 'synced',
     last_synced: '2026-04-22T06:00:00Z',
     version: '6.0.2',

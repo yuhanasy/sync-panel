@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReviewSync } from '../ReviewSync'
 import { useIntegrationStore } from '@/stores/integration_store'
+import { useLocalEntityStore } from '@/stores/local_entity_store'
 import type { SyncChange } from '@/types'
 
 const mockChanges: SyncChange[] = [
@@ -12,6 +13,18 @@ const mockChanges: SyncChange[] = [
   { id: 'sc3', field_name: 'key.id', change_type: 'DELETE', current_value: 'key-abc' },
 ]
 
+const cleanUser = {
+  local_id: 'user_0', id: '', name: 'Jane Doe', email: 'jane@acmeltd.com',
+  phone: '555-0101', role: 'user', status: 'active',
+  created_at: '2024-01-15T10:00:00Z', updated_at: '2024-01-15T10:00:00Z',
+  dirty_fields: [], pending_values: {},
+}
+const cleanKey = {
+  local_id: 'key_0', id: 'key-abc', user_id: 'user_0', door_id: 'door_0',
+  key_type: 'permanent', access_start: '2024-01-01T00:00:00Z',
+  access_end: '2099-12-31T23:59:59Z', status: 'active',
+  created_at: '2024-01-15T10:00:00Z', dirty_fields: [], pending_values: {},
+}
 
 function renderReview(id = 'salesforce') {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -29,6 +42,7 @@ function renderReview(id = 'salesforce') {
 
 beforeEach(() => {
   useIntegrationStore.setState({ pending_changes: mockChanges })
+  useLocalEntityStore.setState({ users: [cleanUser], doors: [], keys: [cleanKey] })
 })
 
 afterEach(() => {

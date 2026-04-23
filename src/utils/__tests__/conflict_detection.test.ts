@@ -14,6 +14,7 @@ function createTestUser(overrides?: Partial<LocalUser>): LocalUser {
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z',
     dirty_fields: [],
+    pending_values: {},
     ...overrides,
   }
 }
@@ -30,6 +31,7 @@ function createTestDoor(overrides?: Partial<LocalDoor>): LocalDoor {
     last_seen: '2024-01-20T00:00:00Z',
     created_at: '2024-01-01T00:00:00Z',
     dirty_fields: [],
+    pending_values: {},
     ...overrides,
   }
 }
@@ -46,6 +48,7 @@ function createTestKey(overrides?: Partial<LocalKey>): LocalKey {
     status: 'active',
     created_at: '2024-01-01T00:00:00Z',
     dirty_fields: [],
+    pending_values: {},
     ...overrides,
   }
 }

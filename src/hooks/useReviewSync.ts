@@ -132,7 +132,8 @@ export function useReviewSync(integrationId: string | undefined) {
               | 'ADD'
               | 'UPDATE'
               | 'DELETE',
-            current_value: change.current_value,
+            entity_id: change.entity_id,
+            current_value: change.committed_value,
             // For CONFLICT: use chosen side's value
             new_value:
               change.change_type === 'CONFLICT'
@@ -147,9 +148,8 @@ export function useReviewSync(integrationId: string | undefined) {
           else if (change.entity_type === 'key') applyKeyChange(storeChange)
         }
 
-        // For CONFLICT: only apply if resolution is 'external' (local = no-op)
         if (change.change_type === 'CONFLICT') {
-          if (change.resolution === 'external') applyChange(change)
+          applyChange(change)
           // Clear dirty flag regardless of which side won
           if (change.entity_type === 'user')
             clearUserDirtyField(change.entity_id, change.field_name.split('.')[1])
@@ -172,7 +172,7 @@ export function useReviewSync(integrationId: string | undefined) {
           | 'ADD'
           | 'UPDATE'
           | 'DELETE',
-        previous_value: c.current_value,
+        previous_value: c.committed_value,
         new_value:
           c.change_type === 'CONFLICT'
             ? c.resolution === 'local'

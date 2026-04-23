@@ -48,6 +48,7 @@ export interface EnrichedChange {
   change_type: 'ADD' | 'UPDATE' | 'DELETE' | 'CONFLICT'
   current_value?: string
   new_value?: string
+  committed_value?: string
   // Only set when change_type === 'CONFLICT'
   local_value?: string
   external_value?: string
@@ -73,6 +74,7 @@ export interface LocalUser {
   created_at: string
   updated_at: string
   dirty_fields: string[]
+  pending_values: Record<string, string>
 }
 
 export interface LocalDoor {
@@ -86,6 +88,7 @@ export interface LocalDoor {
   last_seen: string
   created_at: string
   dirty_fields: string[]
+  pending_values: Record<string, string>
 }
 
 export interface LocalKey {
@@ -99,4 +102,5 @@ export interface LocalKey {
   status: string
   created_at: string
   dirty_fields: string[]
+  pending_values: Record<string, string>
 }

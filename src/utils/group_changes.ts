@@ -1,15 +1,15 @@
-import type { EnrichedChange } from '@/types'
+type Groupable = { entity_type: string; entity_id: string }
 
 /**
- * Groups a flat EnrichedChange[] into a two-level Map:
- *   Map<entity_type, Map<entity_id, EnrichedChange[]>>
+ * Groups a flat array into a two-level Map:
+ *   Map<entity_type, Map<entity_id, T[]>>
  *
  * Preserves insertion order (array order = change array order).
  */
-export function groupChanges(
-  changes: EnrichedChange[],
-): Map<string, Map<string, EnrichedChange[]>> {
-  const byType = new Map<string, Map<string, EnrichedChange[]>>()
+export function groupChanges<T extends Groupable>(
+  changes: T[],
+): Map<string, Map<string, T[]>> {
+  const byType = new Map<string, Map<string, T[]>>()
 
   for (const change of changes) {
     if (!byType.has(change.entity_type)) {

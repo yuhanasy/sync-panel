@@ -32,7 +32,7 @@ describe('IntegrationsList', () => {
     expect(screen.getByText('Zendesk')).toBeInTheDocument()
     expect(screen.getByText('Stripe')).toBeInTheDocument()
     expect(screen.getByText('Intercom')).toBeInTheDocument()
-    expect(screen.getByText('Shopify')).toBeInTheDocument()
+    expect(screen.getByText('Slack')).toBeInTheDocument()
   })
 
   it('renders all 4 status badges', () => {

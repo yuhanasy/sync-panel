@@ -93,7 +93,7 @@ function detectUpdateConflict(
     return null
   }
 
-  const localValue = String(targetEntity[fieldName as keyof typeof targetEntity] ?? '')
+  const localValue = targetEntity.pending_values[fieldName] ?? String(targetEntity[fieldName as keyof typeof targetEntity] ?? '')
   const externalValue = change.new_value ?? ''
 
   if (localValue === externalValue) {

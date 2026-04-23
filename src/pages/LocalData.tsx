@@ -39,19 +39,19 @@ export function LocalData() {
     if (activeTab === "users") {
       updateUserField(
         id,
-        field as keyof Omit<LocalUser, "local_id" | "dirty_fields">,
+        field as keyof Omit<LocalUser, "local_id" | "dirty_fields" | "pending_values">,
         editValue,
       );
     } else if (activeTab === "doors") {
       updateDoorField(
         id,
-        field as keyof Omit<LocalDoor, "local_id" | "dirty_fields">,
+        field as keyof Omit<LocalDoor, "local_id" | "dirty_fields" | "pending_values">,
         editValue,
       );
     } else if (activeTab === "keys") {
       updateKeyField(
         id,
-        field as keyof Omit<LocalKey, "local_id" | "dirty_fields">,
+        field as keyof Omit<LocalKey, "local_id" | "dirty_fields" | "pending_values">,
         editValue,
       );
     }
@@ -67,6 +67,7 @@ export function LocalData() {
     } else if (activeTab === "keys") {
       resetKeyDirtyFields(id);
     }
+    if (editingCell?.id === id) setEditingCell(null);
   }
 
   return (
@@ -145,17 +146,13 @@ export function LocalData() {
                   <td className="px-4 py-3 font-mono text-xs text-gray-600">
                     {user.local_id}
                   </td>
-                  {["name", "email", "phone", "role", "status"].map((field) => (
+                  {["name", "email", "phone", "role", "status"].map((field) => {
+                    const displayValue = user.pending_values[field] ?? (user[field as keyof LocalUser] as string);
+                    return (
                     <td
                       key={field}
                       className={`px-4 py-3 ${user.dirty_fields.includes(field) ? "bg-amber-50" : ""}`}
-                      onClick={() =>
-                        startEdit(
-                          user.local_id,
-                          field,
-                          user[field as keyof LocalUser] as string,
-                        )
-                      }
+                      onClick={() => startEdit(user.local_id, field, displayValue)}
                     >
                       {editingCell?.id === user.local_id &&
                       editingCell?.field === field ? (
@@ -173,7 +170,7 @@ export function LocalData() {
                       ) : (
                         <div className="flex items-center gap-2">
                           <span className="cursor-pointer hover:underline">
-                            {user[field as keyof LocalUser]}
+                            {displayValue}
                           </span>
                           {user.dirty_fields.includes(field) && (
                             <span
@@ -184,7 +181,8 @@ export function LocalData() {
                         </div>
                       )}
                     </td>
-                  ))}
+                    );
+                  })}
                   <td className="px-4 py-3">
                     {user.dirty_fields.length > 0 && (
                       <button
@@ -240,17 +238,13 @@ export function LocalData() {
                     {door.local_id}
                   </td>
                   {["name", "location", "status", "battery_level"].map(
-                    (field) => (
+                    (field) => {
+                      const displayValue = door.pending_values[field] ?? (door[field as keyof LocalDoor] as string);
+                      return (
                       <td
                         key={field}
                         className={`px-4 py-3 ${door.dirty_fields.includes(field) ? "bg-amber-50" : ""}`}
-                        onClick={() =>
-                          startEdit(
-                            door.local_id,
-                            field,
-                            door[field as keyof LocalDoor] as string,
-                          )
-                        }
+                        onClick={() => startEdit(door.local_id, field, displayValue)}
                       >
                         {editingCell?.id === door.local_id &&
                         editingCell?.field === field ? (
@@ -268,7 +262,7 @@ export function LocalData() {
                         ) : (
                           <div className="flex items-center gap-2">
                             <span className="cursor-pointer hover:underline">
-                              {door[field as keyof LocalDoor]}
+                              {displayValue}
                             </span>
                             {door.dirty_fields.includes(field) && (
                               <span
@@ -279,7 +273,8 @@ export function LocalData() {
                           </div>
                         )}
                       </td>
-                    ),
+                      );
+                    },
                   )}
                   <td className="px-4 py-3">
                     {door.dirty_fields.length > 0 && (
@@ -335,17 +330,13 @@ export function LocalData() {
                   <td className="px-4 py-3 font-mono text-xs text-gray-600">
                     {key.local_id}
                   </td>
-                  {["user_id", "door_id", "key_type", "status"].map((field) => (
+                  {["user_id", "door_id", "key_type", "status"].map((field) => {
+                    const displayValue = key.pending_values[field] ?? (key[field as keyof LocalKey] as string);
+                    return (
                     <td
                       key={field}
                       className={`px-4 py-3 ${key.dirty_fields.includes(field) ? "bg-amber-50" : ""}`}
-                      onClick={() =>
-                        startEdit(
-                          key.local_id,
-                          field,
-                          key[field as keyof LocalKey] as string,
-                        )
-                      }
+                      onClick={() => startEdit(key.local_id, field, displayValue)}
                     >
                       {editingCell?.id === key.local_id &&
                       editingCell?.field === field ? (
@@ -363,7 +354,7 @@ export function LocalData() {
                       ) : (
                         <div className="flex items-center gap-2">
                           <span className="cursor-pointer hover:underline">
-                            {key[field as keyof LocalKey]}
+                            {displayValue}
                           </span>
                           {key.dirty_fields.includes(field) && (
                             <span
@@ -374,7 +365,8 @@ export function LocalData() {
                         </div>
                       )}
                     </td>
-                  ))}
+                    );
+                  })}
                   <td className="px-4 py-3">
                     {key.dirty_fields.length > 0 && (
                       <button
