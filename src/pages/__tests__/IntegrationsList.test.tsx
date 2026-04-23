@@ -1,7 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
+import { beforeEach } from 'vitest'
 import { IntegrationsList } from '../IntegrationsList'
+import { useIntegrationStore } from '@/stores/integration_store'
 
 function renderWithRouter() {
   return render(
@@ -12,6 +14,17 @@ function renderWithRouter() {
 }
 
 describe('IntegrationsList', () => {
+  beforeEach(() => {
+    useIntegrationStore.setState((state) => ({
+      integrations: state.integrations.map((i) => {
+        if (i.id === 'hubspot') return { ...i, status: 'conflict' as const }
+        if (i.id === 'zendesk') return { ...i, status: 'syncing' as const }
+        if (i.id === 'stripe') return { ...i, status: 'error' as const }
+        return i
+      }),
+    }))
+  })
+
   it('renders all 6 integrations by default', () => {
     renderWithRouter()
     expect(screen.getByText('HubSpot')).toBeInTheDocument()

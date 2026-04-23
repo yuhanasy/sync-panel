@@ -26,6 +26,10 @@ interface LocalEntityStore {
   resetUserDirtyFields: (localId: string) => void
   resetDoorDirtyFields: (localId: string) => void
   resetKeyDirtyFields: (localId: string) => void
+
+  clearUserDirtyField: (localId: string, fieldName: string) => void
+  clearDoorDirtyField: (localId: string, fieldName: string) => void
+  clearKeyDirtyField: (localId: string, fieldName: string) => void
 }
 
 export const useLocalEntityStore = create<LocalEntityStore>((set) => ({
@@ -330,6 +334,33 @@ export const useLocalEntityStore = create<LocalEntityStore>((set) => ({
     set((state) => ({
       keys: state.keys.map((k) =>
         k.local_id === localId ? { ...k, dirty_fields: [] } : k,
+      ),
+    })),
+
+  clearUserDirtyField: (localId, fieldName) =>
+    set((state) => ({
+      users: state.users.map((u) =>
+        u.local_id === localId
+          ? { ...u, dirty_fields: u.dirty_fields.filter((f) => f !== fieldName) }
+          : u,
+      ),
+    })),
+
+  clearDoorDirtyField: (localId, fieldName) =>
+    set((state) => ({
+      doors: state.doors.map((d) =>
+        d.local_id === localId
+          ? { ...d, dirty_fields: d.dirty_fields.filter((f) => f !== fieldName) }
+          : d,
+      ),
+    })),
+
+  clearKeyDirtyField: (localId, fieldName) =>
+    set((state) => ({
+      keys: state.keys.map((k) =>
+        k.local_id === localId
+          ? { ...k, dirty_fields: k.dirty_fields.filter((f) => f !== fieldName) }
+          : k,
       ),
     })),
 }))

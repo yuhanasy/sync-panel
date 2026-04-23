@@ -7,7 +7,7 @@ import { useHistoryStore } from '@/stores/history_store'
 import { useLocalEntityStore } from '@/stores/local_entity_store'
 import { ChangeCard } from '@/components/sync/ChangeCard'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { FieldConflict } from '@/components/conflicts/FieldConflict'
+import { EntityGroup } from '@/components/conflicts/EntityGroup'
 import { detectConflicts } from '@/utils/conflict_detection'
 import type { ConflictItem } from '@/types'
 
@@ -27,6 +27,9 @@ export function ReviewSync() {
   const applyUserChange = useLocalEntityStore((s) => s.applyUserChange)
   const applyDoorChange = useLocalEntityStore((s) => s.applyDoorChange)
   const applyKeyChange = useLocalEntityStore((s) => s.applyKeyChange)
+  const clearUserDirtyField = useLocalEntityStore((s) => s.clearUserDirtyField)
+  const clearDoorDirtyField = useLocalEntityStore((s) => s.clearDoorDirtyField)
+  const clearKeyDirtyField = useLocalEntityStore((s) => s.clearKeyDirtyField)
 
   const [selected, setSelected] = useState<Set<string>>(() => new Set(pendingChanges.map((c) => c.id)))
   const [resolutions, setResolutions] = useState<Map<string, 'local' | 'external'>>(new Map())
@@ -56,6 +59,27 @@ export function ReviewSync() {
 
     return { conflicts: conflictItems, cleanChanges: clean }
   }, [pendingChanges, users, doors, keys, resolutions, id])
+
+  const groupedConflicts = useMemo(() => {
+    const byType = new Map<string, Map<string, typeof conflicts>>()
+    for (const c of conflicts) {
+      if (!byType.has(c.entity_type)) byType.set(c.entity_type, new Map())
+      const byId = byType.get(c.entity_type)!
+      if (!byId.has(c.entity_id)) byId.set(c.entity_id, [])
+      byId.get(c.entity_id)!.push(c)
+    }
+    return byType
+  }, [conflicts])
+
+  const groupedCleanChanges = useMemo(() => {
+    const byType = new Map<string, typeof cleanChanges>()
+    for (const c of cleanChanges) {
+      const [entityType] = c.field_name.split('.')
+      if (!byType.has(entityType)) byType.set(entityType, [])
+      byType.get(entityType)!.push(c)
+    }
+    return byType
+  }, [cleanChanges])
 
   const counts = useMemo(() => ({
     add: cleanChanges.filter((c) => c.change_type === 'ADD').length,
@@ -134,6 +158,15 @@ export function ReviewSync() {
             applyKeyChange(changeForConflict)
           }
         }
+      }
+
+      // Clear dirty flags for resolved conflict fields
+      for (const conflict of selectedConflicts) {
+        const [entityType, fieldName] = conflict.field_name.split('.')
+        const entityId = conflict.entity_id
+        if (entityType === 'user') clearUserDirtyField(entityId, fieldName)
+        else if (entityType === 'door') clearDoorDirtyField(entityId, fieldName)
+        else if (entityType === 'key') clearKeyDirtyField(entityId, fieldName)
       }
 
       // Apply clean changes to local store
@@ -266,13 +299,19 @@ export function ReviewSync() {
           {conflicts.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-sm font-medium text-gray-900">Conflicting Changes</h2>
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                {conflicts.map((conflict) => (
-                  <FieldConflict
-                    key={conflict.id}
-                    item={conflict}
-                    onResolve={handleResolveConflict}
-                  />
+              <div className="space-y-4">
+                {Array.from(groupedConflicts.entries()).map(([entityType, byId]) => (
+                  <div key={entityType} className="space-y-2">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{entityType}s</p>
+                    {Array.from(byId.entries()).map(([entityId, items]) => (
+                      <EntityGroup
+                        key={entityId}
+                        entity_id={entityId}
+                        items={items}
+                        onResolve={handleResolveConflict}
+                      />
+                    ))}
+                  </div>
                 ))}
               </div>
             </div>
@@ -281,14 +320,21 @@ export function ReviewSync() {
           {cleanChanges.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-sm font-medium text-gray-900">Clean Changes</h2>
-              {cleanChanges.map((change) => (
-                <ChangeCard
-                  key={change.id}
-                  change={change}
-                  selected={selected.has(change.id)}
-                  onToggle={() => toggleChange(change.id)}
-                />
-              ))}
+              <div className="space-y-2">
+                {Array.from(groupedCleanChanges.entries()).map(([entityType, changes]) => (
+                  <div key={entityType} className="space-y-2">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{entityType}s</p>
+                    {changes.map((change) => (
+                      <ChangeCard
+                        key={change.id}
+                        change={change}
+                        selected={selected.has(change.id)}
+                        onToggle={() => toggleChange(change.id)}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

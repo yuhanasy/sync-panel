@@ -30,7 +30,7 @@ export function FieldConflict({ item, onResolve }: Props) {
         </button>
       </div>
 
-      <div className="text-center text-xs text-gray-400 font-medium">{item.field_name}</div>
+      <div className="text-center text-xs text-gray-400 font-medium">{item.field_name.split('.').pop()}</div>
 
       <div className={`rounded-lg border p-3 ${item.resolution === 'external' ? 'border-amber-400 bg-amber-50' : 'border-gray-200 bg-white'}`}>
         <p className="text-xs text-gray-500 mb-1">External</p>

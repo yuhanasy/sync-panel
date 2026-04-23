@@ -1,8 +1,9 @@
 import { render, screen, act } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { vi } from 'vitest'
+import { vi, beforeEach } from 'vitest'
 import { IntegrationDetail } from '../IntegrationDetail'
+import { useIntegrationStore } from '@/stores/integration_store'
 
 function renderDetail(id: string) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
@@ -19,6 +20,14 @@ function renderDetail(id: string) {
 }
 
 describe('IntegrationDetail', () => {
+  beforeEach(() => {
+    useIntegrationStore.setState((state) => ({
+      integrations: state.integrations.map((i) =>
+        i.id === 'hubspot' ? { ...i, status: 'conflict' as const } : i
+      ),
+    }))
+  })
+
   describe('header', () => {
     it('shows integration name', () => {
       renderDetail('hubspot')
