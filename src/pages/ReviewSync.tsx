@@ -5,9 +5,9 @@ import { CheckCircle2, ArrowLeft, AlertCircle, Inbox } from 'lucide-react'
 import { useIntegrationStore } from '@/stores/integration_store'
 import { useHistoryStore } from '@/stores/history_store'
 import { useLocalEntityStore } from '@/stores/local_entity_store'
-import { ChangeCard } from '@/components/sync/ChangeCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { EntityGroup } from '@/components/conflicts/EntityGroup'
+import { FieldConflict } from '@/components/conflicts/FieldConflict'
 import { detectConflicts } from '@/utils/conflict_detection'
 import type { ConflictItem } from '@/types'
 
@@ -321,20 +321,86 @@ export function ReviewSync() {
           {cleanChanges.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-sm font-medium text-gray-900">Clean Changes</h2>
-              <div className="space-y-2">
-                {Array.from(groupedCleanChanges.entries()).map(([entityType, changes]) => (
-                  <div key={entityType} className="space-y-2">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{entityType}s</p>
-                    {changes.map((change) => (
-                      <ChangeCard
-                        key={change.id}
-                        change={change}
-                        selected={selected.has(change.id)}
-                        onToggle={() => toggleChange(change.id)}
-                      />
-                    ))}
-                  </div>
-                ))}
+              <div className="space-y-4">
+                {Array.from(groupedCleanChanges.entries()).map(([entityType, changes]) => {
+                  const entityIds = new Set<string>()
+                  changes.forEach((c) => {
+                    const conflictItem = conflicts.find((conf) => {
+                      const [confType, confField] = conf.field_name.split('.')
+                      const [chType, chField] = c.field_name.split('.')
+                      return confType === chType && confField === chField
+                    })
+                    if (conflictItem) entityIds.add(conflictItem.entity_id)
+                  })
+
+                  if (entityIds.size === 0) {
+                    return (
+                      <div key={entityType} className="space-y-2">
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{entityType}s</p>
+                        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden px-5">
+                          {changes.map((change) => (
+                            <FieldConflict
+                              key={change.id}
+                              item={{
+                                id: change.id,
+                                integration_id: id!,
+                                entity_type: entityType,
+                                entity_id: 'unknown',
+                                field_name: change.field_name,
+                                local_value: change.current_value || '',
+                                external_value: change.new_value || '',
+                                resolution: null,
+                              }}
+                              isResolvable={false}
+                              selected={selected.has(change.id)}
+                              onToggle={() => toggleChange(change.id)}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  return Array.from(entityIds).map((entityId) => {
+                    const itemsForEntity = changes.filter((c) => {
+                      const conflictItem = conflicts.find((conf) => {
+                        const [confType, confField] = conf.field_name.split('.')
+                        const [chType, chField] = c.field_name.split('.')
+                        return confType === chType && confField === chField
+                      })
+                      return conflictItem?.entity_id === entityId
+                    })
+
+                    return (
+                      <div key={`${entityType}-${entityId}`} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                          <span className="text-sm font-mono font-semibold text-gray-900">{entityId}</span>
+                          <span className="text-xs font-medium text-gray-500">{itemsForEntity.length} change{itemsForEntity.length !== 1 ? 's' : ''}</span>
+                        </div>
+                        <div className="px-5">
+                          {itemsForEntity.map((change) => (
+                            <FieldConflict
+                              key={change.id}
+                              item={{
+                                id: change.id,
+                                integration_id: id!,
+                                entity_type: entityType,
+                                entity_id: entityId,
+                                field_name: change.field_name,
+                                local_value: change.current_value || '',
+                                external_value: change.new_value || '',
+                                resolution: null,
+                              }}
+                              isResolvable={false}
+                              selected={selected.has(change.id)}
+                              onToggle={() => toggleChange(change.id)}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })
+                })}
               </div>
             </div>
           )}

@@ -47,9 +47,9 @@ describe('ReviewSync', () => {
 
   it('renders all change cards', () => {
     renderReview()
-    expect(screen.getByText('user.email')).toBeInTheDocument()
-    expect(screen.getByText('user.status')).toBeInTheDocument()
-    expect(screen.getByText('key.id')).toBeInTheDocument()
+    expect(screen.getByText('email')).toBeInTheDocument()
+    expect(screen.getByText('status')).toBeInTheDocument()
+    expect(screen.getByText('id')).toBeInTheDocument()
   })
 
   it('starts with all changes selected', () => {
