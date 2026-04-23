@@ -3,24 +3,18 @@ import { Link } from 'react-router-dom'
 import { useIntegrationStore } from '@/stores/integration_store'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { SearchInput } from '@/components/ui/SearchInput'
+import { formatDate } from '@/utils/format_date'
 import type { Integration } from '@/types'
 
 const STATUS_OPTIONS: { value: Integration['status'] | 'all'; label: string }[] = [
   { value: 'all', label: 'All statuses' },
   { value: 'synced', label: 'Synced' },
   { value: 'syncing', label: 'Syncing' },
+  { value: 'pending_review', label: 'Pending Review' },
   { value: 'conflict', label: 'Conflict' },
   { value: 'error', label: 'Error' },
 ]
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 export function IntegrationsList() {
   const integrations = useIntegrationStore((s) => s.integrations)

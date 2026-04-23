@@ -3,22 +3,13 @@ import { ArrowLeft, ChevronRight, History, AlertCircle } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useHistoryStore } from '@/stores/history_store'
 import { useIntegrationStore } from '@/stores/integration_store'
+import { formatDate } from '@/utils/format_date'
 import type { HistoryEntry } from '@/types'
 import { EmptyState } from '@/components/ui/EmptyState'
 
 const SOURCE_STYLES: Record<HistoryEntry['source'], string> = {
   System: 'bg-blue-100 text-blue-700',
   User: 'bg-purple-100 text-purple-700',
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 export function SyncHistory() {

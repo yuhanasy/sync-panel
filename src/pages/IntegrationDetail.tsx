@@ -2,6 +2,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { RefreshCw, XCircle, AlertCircle, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
+import { formatDate } from '@/utils/format_date'
 import { useIntegrationStore } from '@/stores/integration_store'
 import { useHistoryStore } from '@/stores/history_store'
 import { StatusBadge } from '@/components/ui/StatusBadge'
@@ -16,16 +17,6 @@ import type { HistoryEntry } from '@/types'
 const SOURCE_STYLES: Record<HistoryEntry['source'], string> = {
   System: 'bg-blue-100 text-blue-700',
   User: 'bg-purple-100 text-purple-700',
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 export function IntegrationDetail() {
@@ -79,6 +70,12 @@ export function IntegrationDetail() {
         setPendingChanges(changes)
         
         // Determine status immediately so back/cancel works correctly
+        if (changes.length === 0) {
+          updateStatus(integrationId, 'synced')
+          toast.success('Already up to date', { description: 'No changes from the integration.' })
+          return
+        }
+
         const enriched = enrichChanges(changes, { users, doors, keys })
         const hasConflicts = enriched.some(c => c.change_type === 'CONFLICT')
         updateStatus(integrationId, hasConflicts ? 'conflict' : 'pending_review')
