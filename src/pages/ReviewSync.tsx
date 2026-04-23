@@ -323,14 +323,35 @@ export function ReviewSync() {
               <h2 className="text-sm font-medium text-gray-900">Clean Changes</h2>
               <div className="space-y-4">
                 {Array.from(groupedCleanChanges.entries()).map(([entityType, changes]) => {
-                  const entityIds = new Set<string>()
-                  changes.forEach((c) => {
+                  const getEntityIdForChange = (change: typeof cleanChanges[0]) => {
+                    const [, fieldName] = change.field_name.split('.')
+
+                    // First try to find from conflicts
                     const conflictItem = conflicts.find((conf) => {
                       const [confType, confField] = conf.field_name.split('.')
-                      const [chType, chField] = c.field_name.split('.')
+                      const [chType, chField] = change.field_name.split('.')
                       return confType === chType && confField === chField
                     })
-                    if (conflictItem) entityIds.add(conflictItem.entity_id)
+                    if (conflictItem) return conflictItem.entity_id
+
+                    // Otherwise try to find from local entities
+                    if (entityType === 'user') {
+                      const user = users.find((u) => u[fieldName as keyof typeof u] === change.current_value)
+                      if (user) return user.local_id
+                    } else if (entityType === 'door') {
+                      const door = doors.find((d) => d[fieldName as keyof typeof d] === change.current_value)
+                      if (door) return door.local_id
+                    } else if (entityType === 'key') {
+                      const key = keys.find((k) => k[fieldName as keyof typeof k] === change.current_value)
+                      if (key) return key.local_id
+                    }
+
+                    return 'unknown'
+                  }
+
+                  const entityIds = new Set<string>()
+                  changes.forEach((c) => {
+                    entityIds.add(getEntityIdForChange(c))
                   })
 
                   if (entityIds.size === 0) {
@@ -362,14 +383,7 @@ export function ReviewSync() {
                   }
 
                   return Array.from(entityIds).map((entityId) => {
-                    const itemsForEntity = changes.filter((c) => {
-                      const conflictItem = conflicts.find((conf) => {
-                        const [confType, confField] = conf.field_name.split('.')
-                        const [chType, chField] = c.field_name.split('.')
-                        return confType === chType && confField === chField
-                      })
-                      return conflictItem?.entity_id === entityId
-                    })
+                    const itemsForEntity = changes.filter((c) => getEntityIdForChange(c) === entityId)
 
                     return (
                       <div key={`${entityType}-${entityId}`} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
